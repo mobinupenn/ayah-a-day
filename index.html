@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ayah a Day</title>
+<meta name="description" content="Memorize the Quran one verse a day, starting with the short surahs.">
+<meta name="theme-color" content="#1F6B57">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ayah a Day">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preload" href="fonts/amiri-quran-arabic-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face { font-family: "Amiri Quran"; font-weight: 400; font-display: swap; src: url(fonts/amiri-quran-arabic-400-normal.woff2) format("woff2"); unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC4, U+10EFC-10EFF, U+1EE00-1EEFF; }
+@font-face { font-family: "Amiri Quran"; font-weight: 400; font-display: swap; src: url(fonts/amiri-quran-latin-400-normal.woff2) format("woff2"); unicode-range: U+0000-00FF, U+FD3E-FD3F; }
+@font-face { font-family: "Spectral"; font-weight: 400; font-style: normal; font-display: swap; src: url(fonts/spectral-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: "Spectral"; font-weight: 400; font-style: italic; font-display: swap; src: url(fonts/spectral-latin-400-italic.woff2) format("woff2"); }
+@font-face { font-family: "Spectral"; font-weight: 600; font-style: normal; font-display: swap; src: url(fonts/spectral-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: "Outfit"; font-weight: 400; font-display: swap; src: url(fonts/outfit-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: "Outfit"; font-weight: 500; font-display: swap; src: url(fonts/outfit-latin-500-normal.woff2) format("woff2"); }
+@font-face { font-family: "Outfit"; font-weight: 600; font-display: swap; src: url(fonts/outfit-latin-600-normal.woff2) format("woff2"); }
+
+/* Layout: one calm reading column, like a single mushaf page; tabs on top, the verse is the hero. */
+:root {
+  --paper: #F2F5F1;
+  --sheet: #FBFCFA;
+  --ink: #15332C;
+  --ink-soft: #4E6660;
+  --line: #D6E0DA;
+  --green: #1F6B57;
+  --green-wash: #E0EDE7;
+  --gold: #A9771F;
+  --gold-wash: #F3E9D3;
+  --warn: #9A4B2E;
+  --f-ar: "Amiri Quran", "Amiri", "Scheherazade New", "Traditional Arabic", serif;
+  --f-read: "Spectral", Georgia, "Times New Roman", serif;
+  --f-ui: "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0E1815; --sheet: #15221E; --ink: #E4ECE7; --ink-soft: #9DB2AA; --line: #2A3A35;
+  --green: #5FBF9F; --green-wash: #1C3530; --gold: #D9AE5C; --gold-wash: #322A19; --warn: #E08D6B; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #0E1815; --sheet: #15221E; --ink: #E4ECE7; --ink-soft: #9DB2AA; --line: #2A3A35;
+  --green: #5FBF9F; --green-wash: #1C3530; --gold: #D9AE5C; --gold-wash: #322A19; --warn: #E08D6B; color-scheme: dark }
+
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--f-ui); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 12px 40px; }
+.wrap { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, a:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 4px; }
+.brand { font-family: var(--f-read); font-size: 1.35rem; font-weight: 600; letter-spacing: .01em; }
+.brand small { display: block; font-family: var(--f-ui); font-size: .78rem; font-weight: 400; color: var(--ink-soft); letter-spacing: 0; }
+.stats { display: flex; gap: 14px; font-variant-numeric: tabular-nums; }
+.stat { text-align: right; }
+.stat b { display: block; font-size: 1.15rem; font-weight: 600; line-height: 1.1; }
+.stat span { font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-soft); }
+
+nav.tabs { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--sheet); border: 1px solid var(--line); border-radius: 12px; padding: 4px; gap: 4px; }
+nav.tabs button { border: 0; background: transparent; padding: 9px 6px; border-radius: 9px; font-weight: 500; color: var(--ink-soft); display: flex; justify-content: center; align-items: center; gap: 6px; }
+nav.tabs button[aria-selected="true"] { background: var(--green); color: var(--sheet); }
+.count { font-size: .72rem; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--gold); color: var(--sheet); font-variant-numeric: tabular-nums; }
+
+.page { background: var(--sheet); border: 1px solid var(--line); border-radius: 16px; padding: 22px 18px; display: flex; flex-direction: column; gap: 18px; }
+.eyebrow { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-soft); }
+.surah-line { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.surah-line h2 { margin: 0; font-family: var(--f-read); font-size: 1.3rem; font-weight: 600; text-wrap: balance; }
+.surah-line .ar-name { font-family: var(--f-ar); font-size: 1.5rem; color: var(--green); }
+.meta { color: var(--ink-soft); font-size: .85rem; }
+
+.bism { text-align: center; font-family: var(--f-ar); font-size: 1.35rem; color: var(--ink-soft); direction: rtl; }
+.ayah { direction: rtl; text-align: center; font-family: var(--f-ar); font-size: clamp(1.9rem, 7.5vw, 2.6rem); line-height: 2.2; padding: 8px 4px; border-block: 1px solid var(--line); }
+.w { display: inline-block; padding: 0 .08em; border-radius: 8px; transition: background .2s, color .2s; }
+.w.hid { color: transparent; background: var(--green-wash); cursor: pointer; text-shadow: none; min-width: 1.4em; }
+.w.hid:hover { background: var(--gold-wash); }
+.w.peek { color: var(--gold); }
+.mark { color: var(--gold); font-size: .8em; padding-inline: .15em; white-space: nowrap; }
+.translit { font-family: var(--f-read); font-style: italic; font-size: 1.05rem; color: var(--ink-soft); text-align: center; }
+.trans { font-family: var(--f-read); font-size: 1.08rem; text-align: center; max-width: 60ch; margin: 0 auto; }
+.trans.nl { padding-top: 12px; border-top: 1px dashed var(--line); }
+.trans + .trans { margin-top: -6px; }
+
+.seg { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.chip { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 6px 12px; font-size: .85rem; color: var(--ink-soft); }
+.chip[aria-pressed="true"] { border-color: var(--green); color: var(--green); background: var(--green-wash); }
+.hint { text-align: center; font-size: .82rem; color: var(--ink-soft); }
+
+.reps { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--paper); border-radius: 12px; padding: 12px 14px; flex-wrap: wrap; }
+.dots { display: flex; gap: 6px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--green); }
+.dot.on { background: var(--green); }
+.reps-label { font-size: .85rem; color: var(--ink-soft); }
+.btn { border: 1px solid var(--line); background: var(--sheet); border-radius: 10px; padding: 10px 16px; font-weight: 500; }
+.btn.primary { background: var(--green); border-color: var(--green); color: var(--sheet); }
+.btn.gold { background: var(--gold); border-color: var(--gold); color: var(--sheet); }
+.btn.ghost { background: transparent; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.actions .btn { flex: 1 1 160px; }
+a.listen { color: var(--green); font-weight: 500; text-decoration: none; font-size: .9rem; }
+a.listen:hover { text-decoration: underline; }
+.row-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.done { text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.done .big { font-family: var(--f-read); font-size: 1.4rem; font-weight: 600; text-wrap: balance; }
+.done p { margin: 0; color: var(--ink-soft); max-width: 42ch; }
+
+.rv-progress { height: 6px; background: var(--paper); border-radius: 3px; overflow: hidden; }
+.rv-progress i { display: block; height: 100%; background: var(--gold); transition: width .3s; }
+
+.path { display: flex; flex-direction: column; gap: 4px; }
+.srow { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 12px 4px; border-bottom: 1px solid var(--line); background: transparent; border-inline: 0; border-top: 0; text-align: left; width: 100%; }
+.srow:last-child { border-bottom: 0; }
+.srow .nm { font-weight: 500; }
+.srow .nm em { font-style: normal; color: var(--ink-soft); font-weight: 400; font-size: .85rem; }
+.srow .arn { font-family: var(--f-ar); font-size: 1.25rem; color: var(--green); line-height: 1.2; }
+.cells { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 3px; }
+.cell { width: 14px; height: 8px; border-radius: 2px; background: var(--line); }
+.cell.l { background: var(--green); }
+.cell.t { background: var(--gold); }
+.srow .num { font-size: .8rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+
+.vlist { display: flex; flex-direction: column; }
+.vitem { padding: 14px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+.vitem .ar { direction: rtl; font-family: var(--f-ar); font-size: 1.55rem; line-height: 2; }
+.vitem .en { font-family: var(--f-read); color: var(--ink-soft); }
+.tag { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; padding: 2px 8px; border-radius: 999px; background: var(--green-wash); color: var(--green); align-self: flex-start; }
+.tag.up { background: var(--paper); color: var(--ink-soft); }
+.vnav { display: flex; flex-direction: column; gap: 10px; }
+.vnav-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.vnav-row .btn { padding: 8px 12px; }
+.vnav-row .btn:disabled { opacity: .35; cursor: default; }
+.vcells { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.vcell { width: 34px; height: 34px; border-radius: 9px; border: 1px solid var(--line); background: var(--sheet); font-size: .82rem; font-variant-numeric: tabular-nums; color: var(--ink-soft); padding: 0; }
+.vcell.l { background: var(--green-wash); border-color: var(--green-wash); color: var(--green); font-weight: 600; }
+.vcell.cur { outline: 2px solid var(--gold); outline-offset: 1px; color: var(--ink); }
+.vitem .open { color: var(--green); align-self: flex-start; font-weight: 500; font-size: .85rem; }
+.back { border: 0; background: none; color: var(--green); padding: 0; font-weight: 500; align-self: flex-start; }
+
+.settings { font-size: .88rem; color: var(--ink-soft); display: flex; flex-direction: column; gap: 10px; }
+.settings .row-between label { color: var(--ink); }
+.settings select { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--sheet); color: var(--ink); }
+.confirm { background: var(--gold-wash); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 10px; color: var(--ink); }
+.sync { font-size: .78rem; color: var(--ink-soft); text-align: center; }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--sheet); padding: 10px 16px; border-radius: 10px; font-size: .9rem; z-index: 20; max-width: calc(100% - 32px); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+header { flex-wrap: wrap; }
+.picker { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; background: var(--paper); border-radius: 12px; padding: 10px 12px; }
+.picker label { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-soft); }
+.picker select { flex: 1 1 200px; min-width: 0; font: inherit; font-weight: 500; padding: 8px 10px; border-radius: 9px; border: 1px solid var(--line); background: var(--sheet); color: var(--ink); }
+
+.recbox { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.rec-btn { display: inline-flex; align-items: center; gap: 8px; }
+.rec-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--warn); }
+.recording .rec-dot { animation: pulse 1s infinite; }
+@keyframes pulse { 50% { opacity: .25; } }
+.rec-list { display: flex; flex-direction: column; gap: 8px; }
+.rec-item { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; }
+.rec-item audio { grid-column: 1 / -1; width: 100%; height: 36px; }
+.rec-item .meta { font-variant-numeric: tabular-nums; }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--warn); font-size: .82rem; }
+label.btn { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.time-on { font-variant-numeric: tabular-nums; }
+
+.timecard { display: flex; flex-direction: column; gap: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.tstats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-variant-numeric: tabular-nums; }
+.tstats b { display: block; font-size: 1.15rem; font-weight: 600; }
+.tstats span { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-soft); }
+.bars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; align-items: end; height: 92px; }
+.bar { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; font-size: .7rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.bar i { display: block; width: 100%; max-width: 28px; border-radius: 4px 4px 2px 2px; background: var(--green); min-height: 2px; }
+.bar.today i { background: var(--gold); }
+.bar.empty i { background: var(--line); }
+@media (prefers-reduced-motion: reduce) { .recording .rec-dot { animation: none; } }
+/* ---- standalone app additions ---- */
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; padding-top: max(12px, env(safe-area-inset-top, 0px)); padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); min-height: 100vh; }
+[hidden] { display: none !important; }
+.brand-col { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; min-width: 0; }
+.who-chip { border: 1px solid var(--line); background: var(--sheet); border-radius: 999px; padding: 4px 12px 4px 4px; font-size: .85rem; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; max-width: 100%; }
+.who-chip .av, .pbtn .av { width: 26px; height: 26px; border-radius: 50%; background: var(--green); color: var(--sheet); display: inline-grid; place-items: center; font-size: .8rem; font-weight: 600; flex: none; }
+.who-chip span.nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plist { display: flex; flex-direction: column; gap: 8px; }
+.pbtn { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; border: 1px solid var(--line); background: var(--sheet); border-radius: 12px; padding: 12px; }
+.pbtn .av { width: 40px; height: 40px; font-size: 1.05rem; }
+.pbtn.cur { border-color: var(--green); background: var(--green-wash); }
+.pbtn .pinfo { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.pbtn .pinfo b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pbtn .pinfo span { font-size: .82rem; color: var(--ink-soft); }
+.field { display: flex; gap: 8px; flex-wrap: wrap; }
+.field input, textarea { flex: 1 1 180px; min-width: 0; font: inherit; font-size: 16px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--sheet); color: var(--ink); }
+textarea { width: 100%; min-height: 84px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; resize: vertical; word-break: break-all; }
+.section { display: flex; flex-direction: column; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+.section h3 { margin: 0; font-family: var(--f-read); font-size: 1.1rem; font-weight: 600; color: var(--ink); }
+.section p { margin: 0; }
+.note { background: var(--gold-wash); color: var(--ink); border-radius: 10px; padding: 10px 12px; font-size: .88rem; }
+.mini { display: flex; gap: 14px; flex-wrap: wrap; }
+.mini .linkbtn { color: var(--ink-soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand-col">
+      <div class="brand">Ayah a Day<small>Short surahs, one verse at a time</small></div>
+      <button class="who-chip" id="whoBtn" hidden aria-label="Switch learner"><span class="av" id="whoAv">?</span><span class="nm" id="whoName"></span> ▾</button>
+    </div>
+    <div class="stats" id="stats">
+      <div class="stat"><b id="stStreak">0</b><span>Streak</span></div>
+      <div class="stat"><b id="stLearned">0</b><span>of 164</span></div>
+      <div class="stat"><b id="stTime">0m</b><span>Today</span></div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button id="tab-today" role="tab" aria-selected="true" data-tab="today">Today</button>
+    <button id="tab-review" role="tab" aria-selected="false" data-tab="review">Review <span class="count" id="rvCount" hidden>0</span></button>
+    <button id="tab-path" role="tab" aria-selected="false" data-tab="path">Progress</button>
+  </nav>
+
+  <main id="view" class="page"></main>
+  <div class="sync" id="sync"></div>
+</div>
+<input type="file" id="recFile" accept="audio/*" capture hidden>
+<input type="file" id="restoreFile" accept=".json,application/json,text/plain" hidden>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+const DATA = {"S":[{"n":1,"ar":"الفاتحة","tr":"Al-Fatihah","m":"The Opener","c":7},{"n":114,"ar":"الناس","tr":"An-Nas","m":"Mankind","c":6},{"n":113,"ar":"الفلق","tr":"Al-Falaq","m":"The Daybreak","c":5},{"n":112,"ar":"الإخلاص","tr":"Al-Ikhlas","m":"The Sincerity","c":4},{"n":111,"ar":"المسد","tr":"Al-Masad","m":"The Palm Fiber","c":5},{"n":110,"ar":"النصر","tr":"An-Nasr","m":"The Divine Support","c":3},{"n":109,"ar":"الكافرون","tr":"Al-Kafirun","m":"The Disbelievers","c":6},{"n":108,"ar":"الكوثر","tr":"Al-Kawthar","m":"The Abundance","c":3},{"n":107,"ar":"الماعون","tr":"Al-Ma'un","m":"The Small kindnesses","c":7},{"n":106,"ar":"قريش","tr":"Quraysh","m":"Quraysh","c":4},{"n":105,"ar":"الفيل","tr":"Al-Fil","m":"The Elephant","c":5},{"n":104,"ar":"الهمزة","tr":"Al-Humazah","m":"The Traducer","c":9},{"n":103,"ar":"العصر","tr":"Al-'Asr","m":"The Declining Day","c":3},{"n":102,"ar":"التكاثر","tr":"At-Takathur","m":"The Rivalry in world increase","c":8},{"n":101,"ar":"القارعة","tr":"Al-Qari'ah","m":"The Calamity","c":11},{"n":100,"ar":"العاديات","tr":"Al-'Adiyat","m":"The Courser","c":11},{"n":99,"ar":"الزلزلة","tr":"Az-Zalzalah","m":"The Earthquake","c":8},{"n":98,"ar":"البينة","tr":"Al-Bayyinah","m":"The Clear Proof","c":8},{"n":97,"ar":"القدر","tr":"Al-Qadr","m":"The Power","c":5},{"n":96,"ar":"العلق","tr":"Al-'Alaq","m":"The Clot","c":19},{"n":95,"ar":"التين","tr":"At-Tin","m":"The Fig","c":8},{"n":94,"ar":"الشرح","tr":"Ash-Sharh","m":"The Relief","c":8},{"n":93,"ar":"الضحى","tr":"Ad-Duhaa","m":"The Morning Hours","c":11}],"V":[[1,1,"بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ","Bismi Allahi alrrahmani alrraheemi","In the name of Allah, the Entirely Merciful, the Especially Merciful","In de naam van Allah, de Erbarmer, de Meest Barmhartige"],[1,2,"ٱلۡحَمۡدُ لِلَّهِ رَبِّ ٱلۡعَٰلَمِينَ","Alhamdu lillahi rabbi alAAalameena","[All] praise is [due] to Allah, Lord of the worlds","Alle lof zij Allah, de Heer der Werelden"],[1,3,"ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ","Alrrahmani alrraheemi","The Entirely Merciful, the Especially Merciful","De Erbarmer, de Meest Barmhartige"],[1,4,"مَٰلِكِ يَوۡمِ ٱلدِّينِ","Maliki yawmi alddeeni","Sovereign of the Day of Recompense","De Heerser op de Dag des Oordeels"],[1,5,"إِيَّاكَ نَعۡبُدُ وَإِيَّاكَ نَسۡتَعِينُ","Iyyaka naAAbudu waiyyaka nastaAAeenu","It is You we worship and You we ask for help","U alleen aanbidden wij en U alleen vragen wij om hulp"],[1,6,"ٱهۡدِنَا ٱلصِّرَٰطَ ٱلۡمُسۡتَقِيمَ","Ihdina alssirata almustaqeema","Guide us to the straight path","Leid ons op het rechte Pad"],[1,7,"صِرَٰطَ ٱلَّذِينَ أَنۡعَمۡتَ عَلَيۡهِمۡ غَيۡرِ ٱلۡمَغۡضُوبِ عَلَيۡهِمۡ وَلَا ٱلضَّآلِّينَ","Sirata allatheena anAAamta AAalayhim ghayri almaghdoobi AAalayhim wala alddalleena","The path of those upon whom You have bestowed favor, not of those who have evoked [Your] anger or of those who are astray","Het Pad van degenen aan wie U gunsten hebt geschonken, niet van degenen op wie de toorn rust en niet dat van de dwalenden"],[114,1,"قُلۡ أَعُوذُ بِرَبِّ ٱلنَّاسِ","Qul aAAoothu birabbi alnnasi","Say, \"I seek refuge in the Lord of mankind","Zeg: \"Ik zoek bescherming bij de Heer van de mensen"],[114,2,"مَلِكِ ٱلنَّاسِ","Maliki alnnasi","The Sovereign of mankind","De Koning van de mensen"],[114,3,"إِلَٰهِ ٱلنَّاسِ","Ilahi alnnasi","The God of mankind","De God van de mensen"],[114,4,"مِن شَرِّ ٱلۡوَسۡوَاسِ ٱلۡخَنَّاسِ","Min sharri alwaswasi alkhannasi","From the evil of the retreating whisperer","Tegen het kwaad van de wegsluipende influisteraar"],[114,5,"ٱلَّذِي يُوَسۡوِسُ فِي صُدُورِ ٱلنَّاسِ","Allathee yuwaswisu fee sudoori alnnasi","Who whispers [evil] into the breasts of mankind","Degene die in de harten van de mensen influistert"],[114,6,"مِنَ ٱلۡجِنَّةِ وَٱلنَّاسِ","Mina aljinnati wa alnnasm","From among the jinn and mankind","Van de Djinn's en de mensen"],[113,1,"قُلۡ أَعُوذُ بِرَبِّ ٱلۡفَلَقِ","Qul aAAoothu birabbi alfalaqi","Say, \"I seek refuge in the Lord of daybreak","Zeg: \"Ik zoek bescherming bij de Heer der dageraad"],[113,2,"مِن شَرِّ مَا خَلَقَ","Min sharri ma khalaqa","From the evil of that which He created","Tegen het kwaad dat Hij geschapen heeft"],[113,3,"وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ","Wamin sharri ghasiqin itha waqaba","And from the evil of darkness when it settles","En tegen het kwaad van de donkere nacht wanneer hij aanbreekt"],[113,4,"وَمِن شَرِّ ٱلنَّفَّـٰثَٰتِ فِي ٱلۡعُقَدِ","Wamin sharri alnnaffathati fee alAAuqadi","And from the evil of the blowers in knots","En tegen het kwaad van hen die op knopen blazen"],[113,5,"وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ","Wamin sharri hasidin itha hasada","And from the evil of an envier when he envies","En tegen het kwaad van een jaloerse wanneer deze jaloers is"],[112,1,"قُلۡ هُوَ ٱللَّهُ أَحَدٌ","Qul huwa Allahu ahadun","Say, \"He is Allah, [who is] One","Zeg: \"Hij is Allah, de Enige"],[112,2,"ٱللَّهُ ٱلصَّمَدُ","Allahu alssamadu","Allah, the Eternal Refuge","Allah is de Enige van Wie al het geschapene afhankelijk is"],[112,3,"لَمۡ يَلِدۡ وَلَمۡ يُولَدۡ","Lam yalid walam yooladu","He neither begets nor is born","Hij heeft niet verwekt en is niet verwekt"],[112,4,"وَلَمۡ يَكُن لَّهُۥ كُفُوًا أَحَدُۢ","Walam yakun lahu kufuwan ahadun","Nor is there to Him any equivalent","En niet één is aan Hem gelijkwaardig"],[111,1,"تَبَّتۡ يَدَآ أَبِي لَهَبٖ وَتَبَّ","Tabbat yada abee lahabin watabba","May the hands of Abu Lahab be ruined, and ruined is he","Vernietigd zijn de handen van Aboe Lahab en vernietigd is hij"],[111,2,"مَآ أَغۡنَىٰ عَنۡهُ مَالُهُۥ وَمَا كَسَبَ","Ma aghna AAanhu maluhu wama kasaba","His wealth will not avail him or that which he gained","Zijn bezit en wat hij voortbracht, baat hem niet"],[111,3,"سَيَصۡلَىٰ نَارٗا ذَاتَ لَهَبٖ","Sayasla naran thata lahabin","He will [enter to] burn in a Fire of [blazing] flame","Hij zal een vuur van vlammen (de Hel) binnengaan"],[111,4,"وَٱمۡرَأَتُهُۥ حَمَّالَةَ ٱلۡحَطَبِ","Waimraatuhu hammalata alhatabi","And his wife [as well] - the carrier of firewood","En ook zijn vrouw, aandraagster van brandhout"],[111,5,"فِي جِيدِهَا حَبۡلٞ مِّن مَّسَدِۭ","Fee jeediha hablun min masadin","Around her neck is a rope of [twisted] fiber","Om haar nek een touw van vezels"],[110,1,"إِذَا جَآءَ نَصۡرُ ٱللَّهِ وَٱلۡفَتۡحُ","Itha jaa nasru Allahi waalfathu","When the victory of Allah has come and the conquest","Als de hulp van Allah en de overwinning zijn gekomen"],[110,2,"وَرَأَيۡتَ ٱلنَّاسَ يَدۡخُلُونَ فِي دِينِ ٱللَّهِ أَفۡوَاجٗا","Waraayta alnnasa yadkhuloona fee deeni Allahi afwajan","And you see the people entering into the religion of Allah in multitudes","En jij (O Mohammed) de mensen in grote groepen tot de godsdienst van Allah ziet toetreden"],[110,3,"فَسَبِّحۡ بِحَمۡدِ رَبِّكَ وَٱسۡتَغۡفِرۡهُۚ إِنَّهُۥ كَانَ تَوَّابَۢا","Fasabbih bihamdi rabbika waistaghfirhu innahu kana tawwaban","Then exalt [Him] with praise of your Lord and ask forgiveness of Him. Indeed, He is ever Accepting of repentance","Prijs dan de Glorie van jouw Heer en vraag Hem om vergeving. Voorwaar, Hij is Berouwaanvaardend"],[109,1,"قُلۡ يَـٰٓأَيُّهَا ٱلۡكَٰفِرُونَ","Qul ya ayyuha alkafiroona","Say, \"O disbelievers","Zeg (O Mohammed): \"O ongelovigen"],[109,2,"لَآ أَعۡبُدُ مَا تَعۡبُدُونَ","La aAAbudu ma taAAbudoona","I do not worship what you worship","Ik aanbid niet wat jullie aanbidden"],[109,3,"وَلَآ أَنتُمۡ عَٰبِدُونَ مَآ أَعۡبُدُ","Wala antum AAabidoona ma aAAbudu","Nor are you worshippers of what I worship","En jullie zijn geen aanbidders van wat ik aanbid"],[109,4,"وَلَآ أَنَا۠ عَابِدٞ مَّا عَبَدتُّمۡ","Wala ana AAabidun ma AAabadtum","Nor will I be a worshipper of what you worship","En ik zal nooit een aanbidder worden van wat jullie aanbidden"],[109,5,"وَلَآ أَنتُمۡ عَٰبِدُونَ مَآ أَعۡبُدُ","Wala antum AAabidoona ma aAAbudu","Nor will you be worshippers of what I worship","En jullie zullen nooit aanbidders worden van wat ik aanbid"],[109,6,"لَكُمۡ دِينُكُمۡ وَلِيَ دِينِ","Lakum deenukum waliya deeni","For you is your religion, and for me is my religion","Daarom, voor jullie jullie godsdienst en voor mij mijn godsdienst"],[108,1,"إِنَّآ أَعۡطَيۡنَٰكَ ٱلۡكَوۡثَرَ","Inna aAAtaynaka alkawthara","Indeed, We have granted you, [O Muhammad], al-Kawthar","Waarlijk, Wij hebben jou de overvloed geschonken"],[108,2,"فَصَلِّ لِرَبِّكَ وَٱنۡحَرۡ","Fasalli lirabbika wainhar","So pray to your Lord and sacrifice [to Him alone]","Verricht daarom de shalât voor jouw Heer en slacht offerdieren"],[108,3,"إِنَّ شَانِئَكَ هُوَ ٱلۡأَبۡتَرُ","Inna shaniaka huwa alabtaru","Indeed, your enemy is the one cut off","Voorwaar, jouw hater, hij is het die afgesneden is"],[107,1,"أَرَءَيۡتَ ٱلَّذِي يُكَذِّبُ بِٱلدِّينِ","Araayta allathee yukaththibu bialddeeni","Have you seen the one who denies the Recompense","Weet jij wie degene is die (de Dag van) het Oordeel loochent"],[107,2,"فَذَٰلِكَ ٱلَّذِي يَدُعُّ ٱلۡيَتِيمَ","Fathalika allathee yaduAAAAu alyateema","For that is the one who drives away the orphan","Dat is degene die de wees wegduwt"],[107,3,"وَلَا يَحُضُّ عَلَىٰ طَعَامِ ٱلۡمِسۡكِينِ","Wala yahuddu AAala taAAami almiskeeni","And does not encourage the feeding of the poor","En hij spoort niet aan tot het geven van voedsel aan de behoeftigen"],[107,4,"فَوَيۡلٞ لِّلۡمُصَلِّينَ","Fawaylun lilmusalleena","So woe to those who pray","Wee dan de verrichters van de shalât"],[107,5,"ٱلَّذِينَ هُمۡ عَن صَلَاتِهِمۡ سَاهُونَ","Allatheena hum AAan salatihim sahoona","[But] who are heedless of their prayer","Degenen die onachtzaam zijn met hun shalât"],[107,6,"ٱلَّذِينَ هُمۡ يُرَآءُونَ","Allatheena hum yuraoona","Those who make show [of their deeds]","Degenen die er een vertoning van maken"],[107,7,"وَيَمۡنَعُونَ ٱلۡمَاعُونَ","WayamnaAAoona almaAAoona","And withhold [simple] assistance","En die de levensbenodigdheden tegenhouden"],[106,1,"لِإِيلَٰفِ قُرَيۡشٍ","Lieelafi qurayshin","For the accustomed security of the Quraysh","Vanwege de gewoonte*1 van de Qoeraisj"],[106,2,"إِۦلَٰفِهِمۡ رِحۡلَةَ ٱلشِّتَآءِ وَٱلصَّيۡفِ","Eelafihim rihlata alshshitai waalssayfi","Their accustomed security [in] the caravan of winter and summer","Hun gewoonte van het maken van tochten in de winter en de zomer"],[106,3,"فَلۡيَعۡبُدُواْ رَبَّ هَٰذَا ٱلۡبَيۡتِ","FalyaAAbudoo rabba hatha albayti","Let them worship the Lord of this House","Daarom moeten zij de Heer van dit Huis aanbidden"],[106,4,"ٱلَّذِيٓ أَطۡعَمَهُم مِّن جُوعٖ وَءَامَنَهُم مِّنۡ خَوۡفِۭ","Allathee atAAamahum min jooAAin waamanahum min khawfin","Who has fed them, [saving them] from hunger and made them safe, [saving them] from fear","Degene Die hun tegen de honger voedt en hen veilig stelt voor de angst"],[105,1,"أَلَمۡ تَرَ كَيۡفَ فَعَلَ رَبُّكَ بِأَصۡحَٰبِ ٱلۡفِيلِ","Alam tara kayfa faAAala rabbuka biashabi alfeeli","Have you not considered, [O Muhammad], how your Lord dealt with the companions of the elephant","Heb jij niet vernomen hoe jouw Heer met de mensen van de olifant heeft gehandeld"],[105,2,"أَلَمۡ يَجۡعَلۡ كَيۡدَهُمۡ فِي تَضۡلِيلٖ","Alam yajAAal kaydahum fee tadleelin","Did He not make their plan into misguidance","Heeft Hij hun plan niet verijdeld"],[105,3,"وَأَرۡسَلَ عَلَيۡهِمۡ طَيۡرًا أَبَابِيلَ","Waarsala AAalayhim tayran ababeela","And He sent against them birds in flocks","En Hij heeft over hen zwermen vogels gezonden"],[105,4,"تَرۡمِيهِم بِحِجَارَةٖ مِّن سِجِّيلٖ","Tarmeehim bihijaratin min sijjeelin","Striking them with stones of hard clay","Die stenen van klei op hen wierpen"],[105,5,"فَجَعَلَهُمۡ كَعَصۡفٖ مَّأۡكُولِۭ","FajaAAalahum kaAAasfin makoolin","And He made them like eaten straw","Zo maakte Hij hen als (door wormen) aangevreten bladeren"],[104,1,"وَيۡلٞ لِّكُلِّ هُمَزَةٖ لُّمَزَةٍ","Waylun likulli humazatin lumazatin","Woe to every scorner and mocker","Wee elke lasteraar en roddelaar"],[104,2,"ٱلَّذِي جَمَعَ مَالٗا وَعَدَّدَهُۥ","Allathee jamaAAa malan waAAaddadahu","Who collects wealth and [continuously] counts it","Degene die bezit verzamelt en het telkens telt"],[104,3,"يَحۡسَبُ أَنَّ مَالَهُۥٓ أَخۡلَدَهُۥ","Yahsabu anna malahu akhladahu","He thinks that his wealth will make him immortal","Hij denkt dat zijn bezit hem eeuwiglevend maakt"],[104,4,"كَلَّاۖ لَيُنۢبَذَنَّ فِي ٱلۡحُطَمَةِ","Kalla layunbathanna fee alhutamati","No! He will surely be thrown into the Crusher","Nee! Hij zal zeker in de vernietiger gesmeten worden"],[104,5,"وَمَآ أَدۡرَىٰكَ مَا ٱلۡحُطَمَةُ","Wama adraka ma alhutamatu","And what can make you know what is the Crusher","En wat doet jou weten wat de vernietiger is"],[104,6,"نَارُ ٱللَّهِ ٱلۡمُوقَدَةُ","Naru Allahi almooqadatu","It is the fire of Allah, [eternally] fueled","Het door Allah aangestoken Vuur (de Hel)"],[104,7,"ٱلَّتِي تَطَّلِعُ عَلَى ٱلۡأَفۡـِٔدَةِ","Allatee tattaliAAu AAala alafidati","Which mounts directed at the hearts","Dat tot in de harten doordringt"],[104,8,"إِنَّهَا عَلَيۡهِم مُّؤۡصَدَةٞ","lnnaha AAalayhim musadatun","Indeed, Hellfire will be closed down upon them","Voorwaar, het zal hen omhullen"],[104,9,"فِي عَمَدٖ مُّمَدَّدَةِۭ","Fee AAamadin mumaddadatin","In extended columns","In langgerekte zuilen"],[103,1,"وَٱلۡعَصۡرِ","WaalAAasri","By time","Bij de tijd"],[103,2,"إِنَّ ٱلۡإِنسَٰنَ لَفِي خُسۡرٍ","Inna alinsana lafee khusrin","Indeed, mankind is in loss","Voorwaar, de mens lijdt zeker verlies"],[103,3,"إِلَّا ٱلَّذِينَ ءَامَنُواْ وَعَمِلُواْ ٱلصَّـٰلِحَٰتِ وَتَوَاصَوۡاْ بِٱلۡحَقِّ وَتَوَاصَوۡاْ بِٱلصَّبۡرِ","Illa allatheena amanoo waAAamiloo alssalihati watawasaw bialhaqqi watawasaw bialssabri","Except for those who have believed and done righteous deeds and advised each other to truth and advised each other to patience","Behalve degenen die geloven en goede daden verrichten en elkaar aansporen tot de Waarheid en elkaar aansporen tot geduld"],[102,1,"أَلۡهَىٰكُمُ ٱلتَّكَاثُرُ","Alhakumu alttakathuru","Competition in [worldly] increase diverts you","Jullie gaan op in de wedijver om meer"],[102,2,"حَتَّىٰ زُرۡتُمُ ٱلۡمَقَابِرَ","Hatta zurtumu almaqabira","Until you visit the graveyards","Totdat jullie in de graven terechtkomen"],[102,3,"كَلَّا سَوۡفَ تَعۡلَمُونَ","Kalla sawfa taAAlamoona","No! You are going to know","Nee, jullie zullen het weten"],[102,4,"ثُمَّ كَلَّا سَوۡفَ تَعۡلَمُونَ","Thumma kalla sawfa taAAlamoona","Then no! You are going to know","Nogmaals, nee! Jullie zullen het weten"],[102,5,"كَلَّا لَوۡ تَعۡلَمُونَ عِلۡمَ ٱلۡيَقِينِ","Kalla law taAAlamoona AAilma alyaqeeni","No! If you only knew with knowledge of certainty","Nee! Als jullie het maar met zekere kennis zouden weten"],[102,6,"لَتَرَوُنَّ ٱلۡجَحِيمَ","Latarawunna aljaheema","You will surely see the Hellfire","Jullie zullen zeker de Hel zien"],[102,7,"ثُمَّ لَتَرَوُنَّهَا عَيۡنَ ٱلۡيَقِينِ","Thumma latarawunnaha AAayna alyaqeeni","Then you will surely see it with the eye of certainty","Nogmaals, jullie zullen haar met een zeker oog zien"],[102,8,"ثُمَّ لَتُسۡـَٔلُنَّ يَوۡمَئِذٍ عَنِ ٱلنَّعِيمِ","Thumma latusalunna yawmaithin AAani alnnaAAeemi","Then you will surely be asked that Day about pleasure","Dan zullen jullie op die Dag ondervraagd worden over de genietingen"],[101,1,"ٱلۡقَارِعَةُ","AlqariAAatu","The Striking Calamity","De Daverende (De Dag der Opstanding)"],[101,2,"مَا ٱلۡقَارِعَةُ","Ma alqariAAatu","What is the Striking Calamity","Wat is de Daverende"],[101,3,"وَمَآ أَدۡرَىٰكَ مَا ٱلۡقَارِعَةُ","Wama adraka ma alqariAAatu","And what can make you know what is the Striking Calamity","En wat doet jou weten wat de Daverende is"],[101,4,"يَوۡمَ يَكُونُ ٱلنَّاسُ كَٱلۡفَرَاشِ ٱلۡمَبۡثُوثِ","Yawma yakoonu alnnasu kaalfarashi almabthoothi","It is the Day when people will be like moths, dispersed","Op de Dag dat de mensen als verstrooide motten zijn"],[101,5,"وَتَكُونُ ٱلۡجِبَالُ كَٱلۡعِهۡنِ ٱلۡمَنفُوشِ","Watakoonu aljibalu kaalAAihni almanfooshi","And the mountains will be like wool, fluffed up","En de bergen als vespreide wolvlokken"],[101,6,"فَأَمَّا مَن ثَقُلَتۡ مَوَٰزِينُهُۥ","Faamma man thaqulat mawazeenuhu","Then as for one whose scales are heavy [with good deeds]","Wat betreft degene van wie dan zijn weegschaal (met goede daden) zwaar weegt"],[101,7,"فَهُوَ فِي عِيشَةٖ رَّاضِيَةٖ","Fahuwa fee AAeeshatin radiyatin","He will be in a pleasant life","Hij zal een behaaglijk leven leiden"],[101,8,"وَأَمَّا مَنۡ خَفَّتۡ مَوَٰزِينُهُۥ","Waamma man khaffat mawazeenuhu","But as for one whose scales are light","En wat betreft degene van wie zijn weegschaal licht weegt"],[101,9,"فَأُمُّهُۥ هَاوِيَةٞ","Faommuhu hawiyatun","His refuge will be an abyss","Zijn verblijfplaats is dan Hawiyah*2 (de Hel)"],[101,10,"وَمَآ أَدۡرَىٰكَ مَا هِيَهۡ","Wama adraka ma hiyah","And what can make you know what that is","En wat doet jou weten wat zij is"],[101,11,"نَارٌ حَامِيَةُۢ","Narun hamiyatun","It is a Fire, intensely hot","Een verbandende Hel"],[100,1,"وَٱلۡعَٰدِيَٰتِ ضَبۡحٗا","WaalAAadiyati dabhan","By the racers, panting","Bij de snuivend voortrennenden"],[100,2,"فَٱلۡمُورِيَٰتِ قَدۡحٗا","Faalmooriyati qadhan","And the producers of sparks [when] striking","Die vonken slaan"],[100,3,"فَٱلۡمُغِيرَٰتِ صُبۡحٗا","Faalmugheerati subhan","And the chargers at dawn","Die in de ochtendschemering aanvallen"],[100,4,"فَأَثَرۡنَ بِهِۦ نَقۡعٗا","Faatharna bihi naqAAan","Stirring up thereby [clouds of] dust","Die daarbij stof opwerpen"],[100,5,"فَوَسَطۡنَ بِهِۦ جَمۡعًا","Fawasatna bihi jamAAan","Arriving thereby in the center collectively","Die dan het midden van de gelederen (van de vijand) doorbreken"],[100,6,"إِنَّ ٱلۡإِنسَٰنَ لِرَبِّهِۦ لَكَنُودٞ","Inna alinsana lirabbihi lakanoodun","Indeed mankind, to his Lord, is ungrateful","Voorwaar, de mens is zijn Heer zeker ondankbaar"],[100,7,"وَإِنَّهُۥ عَلَىٰ ذَٰلِكَ لَشَهِيدٞ","Wainnahu AAala thalika lashaheedun","And indeed, he is to that a witness","En voorwaar, hij is daar zeker getuige van"],[100,8,"وَإِنَّهُۥ لِحُبِّ ٱلۡخَيۡرِ لَشَدِيدٌ","Wainnahu lihubbi alkhayri lashadeedun","And indeed he is, in love of wealth, intense","En voorwaar, hij heeft zeker een hevige liefde voor bezit"],[100,9,"۞أَفَلَا يَعۡلَمُ إِذَا بُعۡثِرَ مَا فِي ٱلۡقُبُورِ","Afala yaAAlamu itha buAAthira ma fee alquboori","But does he not know that when the contents of the graves are scattered","Weet hij dan niet dat, wanneer naar buiten wordt gekeerd wat in de graven is"],[100,10,"وَحُصِّلَ مَا فِي ٱلصُّدُورِ","Wahussila ma fee alssudoori","And that within the breasts is obtained","En onthuld wordt wat in de harten is"],[100,11,"إِنَّ رَبَّهُم بِهِمۡ يَوۡمَئِذٖ لَّخَبِيرُۢ","Inna rabbahum bihim yawmaithin lakhabeerun","Indeed, their Lord with them, that Day, is [fully] Acquainted","Dat hun Heer op die Dag zeker Alwetend over hen is"],[99,1,"إِذَا زُلۡزِلَتِ ٱلۡأَرۡضُ زِلۡزَالَهَا","Itha zulzilati alardu zilzalaha","When the earth is shaken with its [final] earthquake","Wanneer de aarde door haar beving wordt geschud"],[99,2,"وَأَخۡرَجَتِ ٱلۡأَرۡضُ أَثۡقَالَهَا","Waakhrajati alardu athqalaha","And the earth discharges its burdens","En de aarde haar lasten naar buiten keert"],[99,3,"وَقَالَ ٱلۡإِنسَٰنُ مَا لَهَا","Waqala alinsanu ma laha","And man says, \"What is [wrong] with it","En de mens zegt: \"Wat is er met haar aan de hand"],[99,4,"يَوۡمَئِذٖ تُحَدِّثُ أَخۡبَارَهَا","Yawmaithin tuhaddithu akhbaraha","That Day, it will report its news","Op die Dag zal zij haar berichten bekendmaken"],[99,5,"بِأَنَّ رَبَّكَ أَوۡحَىٰ لَهَا","Bianna rabbaka awha laha","Because your Lord has commanded it","Omdat jouw Heer het haar bevolen heeft"],[99,6,"يَوۡمَئِذٖ يَصۡدُرُ ٱلنَّاسُ أَشۡتَاتٗا لِّيُرَوۡاْ أَعۡمَٰلَهُمۡ","Yawmaithin yasduru alnnasu ashtatan liyuraw aAAmalahum","That Day, the people will depart separated [into categories] to be shown [the result of] their deeds","Op die Dag zullen de mensen in verschillende groepen tevoorschijn komen om hun daden te zien"],[99,7,"فَمَن يَعۡمَلۡ مِثۡقَالَ ذَرَّةٍ خَيۡرٗا يَرَهُۥ","Faman yaAAmal mithqala tharratin khayran yarahu","So whoever does an atom's weight of good will see it","Wie iets goeds deed ter grootte van een mosterdzaadje, zal het dan zien"],[99,8,"وَمَن يَعۡمَلۡ مِثۡقَالَ ذَرَّةٖ شَرّٗا يَرَهُۥ","Waman yaAAmal mithqala tharratin sharran yarahu","And whoever does an atom's weight of evil will see it","En wie iets kwaads deed ter grootte van een mosterdzaadje, zal het dan zien"],[98,1,"لَمۡ يَكُنِ ٱلَّذِينَ كَفَرُواْ مِنۡ أَهۡلِ ٱلۡكِتَٰبِ وَٱلۡمُشۡرِكِينَ مُنفَكِّينَ حَتَّىٰ تَأۡتِيَهُمُ ٱلۡبَيِّنَةُ","Lam yakuni allatheena kafaroo min ahli alkitabi waalmushrikeena munfakkeena hatta tatiyahumu albayyinatu","Those who disbelieved among the People of the Scripture and the polytheists were not to be parted [from misbelief] until there came to them clear evidence","De ongelovigen onder de Lieden van de Schrift en de veelgodenaanbidders houden niet op (ongelovig te zijn) tot er een duidelijk bewijs tot hen komt"],[98,2,"رَسُولٞ مِّنَ ٱللَّهِ يَتۡلُواْ صُحُفٗا مُّطَهَّرَةٗ","Rasoolun mina Allahi yatloo suhufan mutahharatan","A Messenger from Allah, reciting purified scriptures","Een Boodschapper van Allah die gereinigde bladen voordraagt"],[98,3,"فِيهَا كُتُبٞ قَيِّمَةٞ","Feeha kutubun qayyimatun","Within which are correct writings","Waarin rechtzinnige boeken (de Koran) zijn"],[98,4,"وَمَا تَفَرَّقَ ٱلَّذِينَ أُوتُواْ ٱلۡكِتَٰبَ إِلَّا مِنۢ بَعۡدِ مَا جَآءَتۡهُمُ ٱلۡبَيِّنَةُ","Wama tafarraqa allatheena ootoo alkitaba illa min baAAdi ma jaathumu albayyinatu","Nor did those who were given the Scripture become divided until after there had come to them clear evidence","En degenen aan wie het Boek is gegeven splitsten zich pas op nadat het duidelijke bewijs tot hen gekomen was"],[98,5,"وَمَآ أُمِرُوٓاْ إِلَّا لِيَعۡبُدُواْ ٱللَّهَ مُخۡلِصِينَ لَهُ ٱلدِّينَ حُنَفَآءَ وَيُقِيمُواْ ٱلصَّلَوٰةَ وَيُؤۡتُواْ ٱلزَّكَوٰةَۚ وَذَٰلِكَ دِينُ ٱلۡقَيِّمَةِ","Wama omiroo illa liyaAAbudoo Allaha mukhliseena lahu alddeena hunafaa wayuqeemoo alssalata wayutoo alzzakata wathalika deenu alqayyimati","And they were not commanded except to worship Allah, [being] sincere to Him in religion, inclining to truth, and to establish prayer and to give zakah. And that is the correct religion","Zij werden niets anders bevolen dan Allah met zuivere aanbidding te aanbidden, als Hoenafâ. En (ook) de shalât te verrichten en de zakât te geven en dat is de rechte godsdienst"],[98,6,"إِنَّ ٱلَّذِينَ كَفَرُواْ مِنۡ أَهۡلِ ٱلۡكِتَٰبِ وَٱلۡمُشۡرِكِينَ فِي نَارِ جَهَنَّمَ خَٰلِدِينَ فِيهَآۚ أُوْلَـٰٓئِكَ هُمۡ شَرُّ ٱلۡبَرِيَّةِ","Inna allatheena kafaroo min ahli alkitabi waalmushrikeena fee nari jahannama khalideena feeha olaika hum sharru albariyyati","Indeed, they who disbelieved among the People of the Scripture and the polytheists will be in the fire of Hell, abiding eternally therein. Those are the worst of creatures","Voorwaar, degenen die ongelovig zijn onder de Lieden van de Schrift en de veelgodenaanbidders zullen in het vuur van de Hel eeuwig levenden zijn. Zij zijn degenen die de slechtste schepsels zijn"],[98,7,"إِنَّ ٱلَّذِينَ ءَامَنُواْ وَعَمِلُواْ ٱلصَّـٰلِحَٰتِ أُوْلَـٰٓئِكَ هُمۡ خَيۡرُ ٱلۡبَرِيَّةِ","Inna allatheena amanoo waAAamiloo alssalihati olaika hum khayru albariyyati","Indeed, they who have believed and done righteous deeds - those are the best of creatures","Voorwaar, degenen die geloven en goede werken verrichten, zij zijn degenen die de beste schepselen zijn"],[98,8,"جَزَآؤُهُمۡ عِندَ رَبِّهِمۡ جَنَّـٰتُ عَدۡنٖ تَجۡرِي مِن تَحۡتِهَا ٱلۡأَنۡهَٰرُ خَٰلِدِينَ فِيهَآ أَبَدٗاۖ رَّضِيَ ٱللَّهُ عَنۡهُمۡ وَرَضُواْ عَنۡهُۚ ذَٰلِكَ لِمَنۡ خَشِيَ رَبَّهُۥ","Jazaohum AAinda rabbihim jannatu AAadnin tajree min tahtiha alanharu khalideena feeha abadan radiya Allahu AAanhum waradoo AAanhu thalika liman khashiya rabbahu","Their reward with Allah will be gardens of perpetual residence beneath which rivers flow, wherein they will abide forever, Allah being pleased with them and they with Him. That is for whoever has feared his Lord","Hun beloningen bij hun Heer zijn de Tuinen van 'Adn (het Paradijs), waar de rivieren onder door stromen, zij zijn eeuwig levenden daarin, voor altijd. Allah is met hen behaagd en zij zijn met Hem behaagd. Dat is voor wie zijn Heer vreest"],[97,1,"إِنَّآ أَنزَلۡنَٰهُ فِي لَيۡلَةِ ٱلۡقَدۡرِ","Inna anzalnahu fee laylati alqadri","Indeed, We sent the Qur'an down during the Night of Decree","Voorwaar, Wij hebben hem (de Koran) neergezonden in de Waardevolle Nacht (Lailatoel Qadr)"],[97,2,"وَمَآ أَدۡرَىٰكَ مَا لَيۡلَةُ ٱلۡقَدۡرِ","Wama adraka ma laylatu alqadri","And what can make you know what is the Night of Decree","En wat doet jullie weten wat de Waardevolle Nacht is"],[97,3,"لَيۡلَةُ ٱلۡقَدۡرِ خَيۡرٞ مِّنۡ أَلۡفِ شَهۡرٖ","Laylatu alqadri khayrun min alfi shahrin","The Night of Decree is better than a thousand months","De Waardevolle Nacht is beter dan duizend maanden"],[97,4,"تَنَزَّلُ ٱلۡمَلَـٰٓئِكَةُ وَٱلرُّوحُ فِيهَا بِإِذۡنِ رَبِّهِم مِّن كُلِّ أَمۡرٖ","Tanazzalu almalaikatu waalrroohu feeha biithni rabbihim min kulli amrin","The angels and the Spirit descend therein by permission of their Lord for every matter","De Engelen en de Geest (Djibrîl) daalden in haar neer met de toestemming van hun Heer, voor elke beschikking"],[97,5,"سَلَٰمٌ هِيَ حَتَّىٰ مَطۡلَعِ ٱلۡفَجۡرِ","Salamun hiya hatta matlaAAi alfajri","Peace it is until the emergence of dawn","Vrede heerst (in deze nacht), tot aan de ochtendschemering"],[96,1,"ٱقۡرَأۡ بِٱسۡمِ رَبِّكَ ٱلَّذِي خَلَقَ","Iqra biismi rabbika allathee khalaqa","Recite in the name of your Lord who created","Lees voor! In de naam van jouw Heer, Die heeft geschapen"],[96,2,"خَلَقَ ٱلۡإِنسَٰنَ مِنۡ عَلَقٍ","Khalaqa alinsana min AAalaqin","Created man from a clinging substance","Hij heeft de mens geschapen van een bloedklomp"],[96,3,"ٱقۡرَأۡ وَرَبُّكَ ٱلۡأَكۡرَمُ","Iqra warabbuka alakramu","Recite, and your Lord is the most Generous","Lees voor! En jouw Heer is de Meest Edele"],[96,4,"ٱلَّذِي عَلَّمَ بِٱلۡقَلَمِ","Allathee AAallama bialqalami","Who taught by the pen","Degene Die onderwezen heeft met de pen"],[96,5,"عَلَّمَ ٱلۡإِنسَٰنَ مَا لَمۡ يَعۡلَمۡ","AAallama alinsana ma lam yaAAlam","Taught man that which he knew not","Hij heeft de mens onderwezen wat hij niet wist"],[96,6,"كَلَّآ إِنَّ ٱلۡإِنسَٰنَ لَيَطۡغَىٰٓ","Kalla inna alinsana layatgha","No! [But] indeed, man transgresses","Nee, voorwaar, de mens is zeker in overtreding"],[96,7,"أَن رَّءَاهُ ٱسۡتَغۡنَىٰٓ","An raahu istaghna","Because he sees himself self-sufficient","Omdat hij zichzelf als behoefteloos beschouwt"],[96,8,"إِنَّ إِلَىٰ رَبِّكَ ٱلرُّجۡعَىٰٓ","Inna ila rabbika alrrujAAa","Indeed, to your Lord is the return","Voorwaar, tot jouw Heer is de terugkeer"],[96,9,"أَرَءَيۡتَ ٱلَّذِي يَنۡهَىٰ","Araayta allathee yanha","Have you seen the one who forbids","Wat denk jij van hem die verbiedt"],[96,10,"عَبۡدًا إِذَا صَلَّىٰٓ","AAabdan itha salla","A servant when he prays","Een dienaar wanneer hij de shalât verricht"],[96,11,"أَرَءَيۡتَ إِن كَانَ عَلَى ٱلۡهُدَىٰٓ","Araayta in kana AAala alhuda","Have you seen if he is upon guidance","Wat denk je, als hij (Mohammed) de leiding volgt"],[96,12,"أَوۡ أَمَرَ بِٱلتَّقۡوَىٰٓ","Aw amara bialttaqwa","Or enjoins righteousness","Of hij tot Taqwa oproept"],[96,13,"أَرَءَيۡتَ إِن كَذَّبَ وَتَوَلَّىٰٓ","Araayta in kaththaba watawalla","Have you seen if he denies and turns away","Wat denk jij, als hij (Abôe Djahl) loochent en zich afwendt"],[96,14,"أَلَمۡ يَعۡلَم بِأَنَّ ٱللَّهَ يَرَىٰ","Alam yaAAlam bianna Allaha yara","Does he not know that Allah sees","Weet hij dan niet dat Allah (hem) ziet"],[96,15,"كَلَّا لَئِن لَّمۡ يَنتَهِ لَنَسۡفَعَۢا بِٱلنَّاصِيَةِ","Kalla lain lam yantahi lanasfaAAan bialnnasiyati","No! If he does not desist, We will surely drag him by the forelock","Nee, als hij niet ophoudt, dan zullen Wij hem bij zijn voorhoofdslok grijpen"],[96,16,"نَاصِيَةٖ كَٰذِبَةٍ خَاطِئَةٖ","Nasiyatin kathibatin khatiatin","A lying, sinning forelock","Een leugenachtige, zondige voorhoofdslok"],[96,17,"فَلۡيَدۡعُ نَادِيَهُۥ","FalyadAAu nadiyahu","Then let him call his associates","Laat hem dan zijn bondgenoten roepen"],[96,18,"سَنَدۡعُ ٱلزَّبَانِيَةَ","SanadAAu alzzabaniyata","We will call the angels of Hell","Wij zullen de Zabâniyah roepen"],[96,19,"كَلَّا لَا تُطِعۡهُ وَٱسۡجُدۡۤ وَٱقۡتَرِب۩","Kalla la tutiAAhu waosjud waiqtarib","No! Do not obey him. But prostrate and draw near [to Allah]","Nee, gehoorzaam hem niet, en kniel je neer en zoek toenadering (tot Allah)"],[95,1,"وَٱلتِّينِ وَٱلزَّيۡتُونِ","Waaltteeni waalzzaytooni","By the fig and the olive","Bij de vijg en de olijf"],[95,2,"وَطُورِ سِينِينَ","Watoori seeneena","And [by] Mount Sinai","Bij de berg Sinaï"],[95,3,"وَهَٰذَا ٱلۡبَلَدِ ٱلۡأَمِينِ","Wahatha albaladi alameeni","And [by] this secure city [Makkah]","Bij deze veilige stad (Mekkah)"],[95,4,"لَقَدۡ خَلَقۡنَا ٱلۡإِنسَٰنَ فِيٓ أَحۡسَنِ تَقۡوِيمٖ","Laqad khalaqna alinsana fee ahsani taqweemin","We have certainly created man in the best of stature","Voorzeker, Wij hebben de mens in de beste vorm geschapen"],[95,5,"ثُمَّ رَدَدۡنَٰهُ أَسۡفَلَ سَٰفِلِينَ","Thumma radadnahu asfala safileena","Then We return him to the lowest of the low","Daarna doen Wij hem terugkeren tot het laagste van het laagste"],[95,6,"إِلَّا ٱلَّذِينَ ءَامَنُواْ وَعَمِلُواْ ٱلصَّـٰلِحَٰتِ فَلَهُمۡ أَجۡرٌ غَيۡرُ مَمۡنُونٖ","Illa allatheena amanoo waAAamiloo alssalihati falahum ajrun ghayru mamnoonin","Except for those who believe and do righteous deeds, for they will have a reward uninterrupted","Behalve degenen die geloven en goede daden verrichten. Voor hen is er een ononderbroken beloning"],[95,7,"فَمَا يُكَذِّبُكَ بَعۡدُ بِٱلدِّينِ","Fama yukaththibuka baAAdu bialddeeni","So what yet causes you to deny the Recompense","Wat doet jullie dan het oordeel nog loochenen"],[95,8,"أَلَيۡسَ ٱللَّهُ بِأَحۡكَمِ ٱلۡحَٰكِمِينَ","Alaysa Allahu biahkami alhakimeena","Is not Allah the most just of judges","Is Allah niet de Rechtvaardigste der Rechters"],[94,1,"أَلَمۡ نَشۡرَحۡ لَكَ صَدۡرَكَ","Alam nashrah laka sadraka","Did We not expand for you, [O Muhammad], your breast","Hebben Wij niet jouw borst verruimd (O Mohammed)"],[94,2,"وَوَضَعۡنَا عَنكَ وِزۡرَكَ","WawadaAAna AAanka wizraka","And We removed from you your burden","En Wij hebben jouw last van je weggenomen"],[94,3,"ٱلَّذِيٓ أَنقَضَ ظَهۡرَكَ","Allathee anqada thahraka","Which had weighed upon your back","Die jouw rug belastte"],[94,4,"وَرَفَعۡنَا لَكَ ذِكۡرَكَ","WarafaAAna laka thikraka","And raised high for you your repute","En Wij hebben jouw roem verhoogd"],[94,5,"فَإِنَّ مَعَ ٱلۡعُسۡرِ يُسۡرًا","Fainna maAAa alAAusri yusran","For indeed, with hardship [will be] ease","Voorwaar, zo komt met de moeilijkeid de verlichting"],[94,6,"إِنَّ مَعَ ٱلۡعُسۡرِ يُسۡرٗا","Inna maAAa alAAusri yusran","Indeed, with hardship [will be] ease","Voorwaar, met de moeilijkheid komt de verlichting"],[94,7,"فَإِذَا فَرَغۡتَ فَٱنصَبۡ","Faitha faraghta fainsab","So when you have finished [your duties], then stand up [for worship]","Wanneer jij dan een taak volbracht hebt, streef dan (verder)"],[94,8,"وَإِلَىٰ رَبِّكَ فَٱرۡغَب","Waila rabbika fairghab","And to your Lord direct [your] longing","En richt jouw verlangen tot jouw Heer"],[93,1,"وَٱلضُّحَىٰ","Waaldduha","By the morning brightness","Bij het ochtendlicht"],[93,2,"وَٱلَّيۡلِ إِذَا سَجَىٰ","Waallayli itha saja","And [by] the night when it covers with darkness","En bij de nacht wanneer het geheel donker is"],[93,3,"مَا وَدَّعَكَ رَبُّكَ وَمَا قَلَىٰ","Ma waddaAAaka rabbuka wama qala","Your Lord has not taken leave of you, [O Muhammad], nor has He detested [you]","Jouw Heer heeft jou (O Moehammad) niet verlaten en Hij is niet kwaad (op jou)"],[93,4,"وَلَلۡأٓخِرَةُ خَيۡرٞ لَّكَ مِنَ ٱلۡأُولَىٰ","Walalakhiratu khayrun laka mina aloola","And the Hereafter is better for you than the first [life]","En het latere (het Hiernamaals) is zeker beter voor jou dan het eerste (het wereldse leven)"],[93,5,"وَلَسَوۡفَ يُعۡطِيكَ رَبُّكَ فَتَرۡضَىٰٓ","Walasawfa yuAAteeka rabbuka fatarda","And your Lord is going to give you, and you will be satisfied","En jouw Heer zal jou zeker gunsten schenken, zodat jij tevreden zult zijn"],[93,6,"أَلَمۡ يَجِدۡكَ يَتِيمٗا فَـَٔاوَىٰ","Alam yajidka yateeman faawa","Did He not find you an orphan and give [you] refuge","Heeft Hij jou niet als wees gevonden en jou in bescherming genomen"],[93,7,"وَوَجَدَكَ ضَآلّٗا فَهَدَىٰ","Wawajadaka dallan fahada","And He found you lost and guided [you]","En Hij heeft jou dwalend gevonden en jou geleid"],[93,8,"وَوَجَدَكَ عَآئِلٗا فَأَغۡنَىٰ","Wawajadaka AAailan faaghna","And He found you poor and made [you] self-sufficient","En Hij heeft jou behoeftig gevonden en rijk gemaakt"],[93,9,"فَأَمَّا ٱلۡيَتِيمَ فَلَا تَقۡهَرۡ","Faamma alyateema fala taqhar","So as for the orphan, do not oppress [him]","Wat de wees betreft: beledig hem niet"],[93,10,"وَأَمَّا ٱلسَّآئِلَ فَلَا تَنۡهَرۡ","Waamma alssaila fala tanhar","And as for the petitioner, do not repel [him]","En wat de bedelaar betreft: wijs hem niet af"],[93,11,"وَأَمَّا بِنِعۡمَةِ رَبِّكَ فَحَدِّثۡ","Waamma biniAAmati rabbika fahaddith","But as for the favor of your Lord, report [it]","En wat de gunsten van jouw Heer betreft: spreek daarover"]]};
+const SURAH = {}; DATA.S.forEach(s => SURAH[s.n] = s);
+const V = DATA.V.map((a, i) => ({ i, s: a[0], v: a[1], ar: a[2], tr: a[3], en: a[4], nl: a[5] }));
+const BISM = V[0].ar;
+const INTERVALS = [1, 3, 7, 14, 30, 60];
+const REPS = 10;
+const MAX_RECS = 3;
+const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
+const arNum = n => String(n).replace(/\d/g, d => AR_DIGITS[d]);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const IS_STANDALONE = (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true;
+
+/* ---------- dates & durations ---------- */
+const todayStr = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+const dayNum = s => { const [y, m, d] = s.split("-").map(Number); return Math.round(Date.UTC(y, m - 1, d) / 864e5); };
+const daysBetween = (a, b) => dayNum(b) - dayNum(a);
+const addDays = (s, n) => new Date((dayNum(s) + n) * 864e5).toISOString().slice(0, 10);
+const weekday = s => new Date(dayNum(s) * 864e5).toLocaleDateString("en-GB", { weekday: "short", timeZone: "UTC" });
+function fmtDur(sec) {
+  sec = Math.round(sec || 0);
+  if (sec < 60) return sec ? "<1 min" : "0 min";
+  const m = Math.round(sec / 60); if (m < 60) return m + " min";
+  return Math.floor(m / 60) + " h" + (m % 60 ? " " + (m % 60) + " min" : "");
+}
+const shortDur = sec => { const m = Math.round((sec || 0) / 60); return m < 60 ? m + "m" : Math.floor(m / 60) + "h" + (m % 60 ? String(m % 60).padStart(2, "0") : ""); };
+const clock = sec => Math.floor(sec / 60) + ":" + String(Math.floor(sec % 60)).padStart(2, "0");
+
+/* ---------- learners (profiles) ---------- */
+const PKEY = "ayah-a-day-profiles";
+const stateKey = id => "ayah-a-day-state-" + id;
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+let storageOK = true;
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { storageOK = false; return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { storageOK = false; return false; } }
+function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+
+let profiles = { list: [], current: null };
+try { const p = JSON.parse(lsGet(PKEY) || "null"); if (p && Array.isArray(p.list)) profiles = p; } catch (e) {}
+// bring over progress from the earlier single-learner version, if this browser has it
+(() => {
+  const old = lsGet("ayah-a-day-v1");
+  if (old && !profiles.list.length) {
+    const id = newId(); profiles.list.push({ id, name: "Me" }); profiles.current = id;
+    lsSet(stateKey(id), old); lsSet(PKEY, JSON.stringify(profiles));
+  }
+})();
+if (!profiles.list.some(p => p.id === profiles.current)) profiles.current = null;
+const saveProfiles = () => lsSet(PKEY, JSON.stringify(profiles));
+const me = () => profiles.list.find(p => p.id === profiles.current) || null;
+const initial = name => (name || "?").trim().charAt(0).toUpperCase() || "?";
+
+function normalize(s) {
+  return Object.assign({ learned: {}, review: {}, active: [], pace: 1, focus: null, time: {}, vtime: {}, rec: {} }, s || {});
+}
+function loadState(id) { try { return normalize(JSON.parse(lsGet(stateKey(id)) || "null")); } catch (e) { return normalize(); } }
+
+let state = profiles.current ? loadState(profiles.current) : normalize();
+let ui = { tab: profiles.current ? "today" : "who", mode: "read", reps: 0, hidden: new Set(), showTr: true, showEn: true, showNl: true,
+  openSurah: null, rvReveal: false, confirmReset: false, extra: false, micBlocked: false,
+  viewIdx: null, editProfile: null, confirmDelete: null, pendingImport: null, showCode: null, pasteOpen: false };
+try { const p = JSON.parse(lsGet("ayah-a-day-view") || "null"); if (p) { ui.showTr = p.tr !== false; ui.showEn = p.en !== false; ui.showNl = p.nl !== false; } } catch (e) {}
+const saveView = () => lsSet("ayah-a-day-view", JSON.stringify({ tr: ui.showTr, en: ui.showEn, nl: ui.showNl }));
+
+let lastSaved = null;
+function save() {
+  if (!profiles.current) return;
+  if (lsSet(stateKey(profiles.current), JSON.stringify(state))) lastSaved = new Date();
+  syncLine();
+}
+function syncLine() {
+  const el = document.getElementById("sync"); const p = me();
+  if (!storageOK) { el.textContent = "This browser isn't letting the app save (private browsing?). Progress will be lost when you close it."; return; }
+  if (!p) { el.textContent = "Everything stays on this device. No account needed."; return; }
+  const at = lastSaved ? " at " + lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
+  el.textContent = `Saved on this device${at}. To continue on another device, use Backup and transfer in Progress.`;
+}
+function markActive() {
+  const t = todayStr();
+  if (!state.active.includes(t)) { state.active.push(t); state.active = state.active.slice(-400); }
+}
+
+/* ---------- derived ---------- */
+const isLearnedIn = (st, i) => st.learned[i] != null;
+const isLearned = i => isLearnedIn(state, i);
+const learnedCount = (st = state) => Object.keys(st.learned).length;
+const learnedToday = () => Object.values(state.learned).filter(x => x.d === todayStr() && !x.k).length;
+const surahVerses = n => V.filter(x => x.s === n);
+const surahLearned = n => surahVerses(n).filter(x => isLearned(x.i)).length;
+const surahTime = n => surahVerses(n).reduce((a, x) => a + (state.vtime[x.i] || 0), 0);
+function nextIdx() {
+  if (state.focus != null) { const f = V.find(x => x.s === state.focus && !isLearned(x.i)); if (f) return f.i; }
+  return V.findIndex(x => !isLearned(x.i));
+}
+function streak(st = state) {
+  const set = new Set(st.active); let n = 0; let d = todayStr();
+  if (!set.has(d)) d = addDays(d, -1);
+  while (set.has(d)) { n++; d = addDays(d, -1); }
+  return n;
+}
+function dueList() {
+  const t = todayStr();
+  return Object.keys(state.learned).map(Number).filter(i => {
+    const r = state.review[i] || { lvl: 0, last: state.learned[i].d };
+    return daysBetween(r.last, t) >= INTERVALS[Math.min(r.lvl, INTERVALS.length - 1)];
+  }).sort((a, b) => a - b);
+}
+const capReached = () => learnedToday() >= state.pace && !ui.extra;
+const surahDone = n => n != null && surahLearned(n) === SURAH[n].c;
+// The verse shown on the Today tab: one the learner navigated to, the chosen surah if it is already
+// memorized (so they can practise it), or otherwise the next new verse.
+function shownIdx() {
+  if (ui.viewIdx != null) return ui.viewIdx;
+  if (surahDone(state.focus)) return surahVerses(state.focus)[0].i;
+  const i = nextIdx(); return i === -1 || capReached() ? null : i;
+}
+function lastLearned() {
+  const ks = Object.keys(state.learned).map(Number); if (!ks.length) return null;
+  ks.sort((a, b) => (state.learned[a].d < state.learned[b].d ? -1 : state.learned[a].d > state.learned[b].d ? 1 : a - b));
+  return ks[ks.length - 1];
+}
+function currentVerse() {
+  if (ui.tab === "today") return shownIdx();
+  if (ui.tab === "review") { const d = dueList(); return d.length ? d[0] : null; }
+  return null;
+}
+
+/* ---------- recordings (kept in this browser's IndexedDB) ---------- */
+const rec = { mr: null, chunks: [], start: 0, idx: null, timer: null };
+const audioUrls = {};
+let idb = null;
+function openIdb() {
+  if (idb) return idb;
+  idb = new Promise((res, rej) => {
+    try { const r = indexedDB.open("ayah-a-day-audio", 1); r.onupgradeneeded = () => r.result.createObjectStore("rec"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }
+    catch (e) { rej(e); }
+  });
+  return idb;
+}
+async function idbDo(mode, fn) { const db = await openIdb(); return new Promise((res, rej) => { const tx = db.transaction("rec", mode); const q = fn(tx.objectStore("rec")); tx.oncomplete = () => res(q && q.result); tx.onerror = () => rej(tx.error); }); }
+async function loadAudio(list) {
+  let changed = false;
+  for (const r of list) {
+    if (audioUrls[r.key] !== undefined) continue;
+    audioUrls[r.key] = null;
+    try { const blob = await idbDo("readonly", s => s.get(r.key)); if (blob) { audioUrls[r.key] = URL.createObjectURL(blob); changed = true; } } catch (e) {}
+  }
+  if (changed && !rec.mr) render();
+}
+async function storeRecording(idx, blob, dur) {
+  if (!blob || !blob.size) { toast("That recording was empty. Try again."); return; }
+  const key = profiles.current + ":r" + Date.now();
+  let saved = false;
+  try { await idbDo("readwrite", s => s.put(blob, key)); saved = true; } catch (e) {}
+  audioUrls[key] = URL.createObjectURL(blob);
+  const list = state.rec[idx] || [];
+  list.unshift({ key, d: todayStr(), dur: Math.round(dur || 0) });
+  while (list.length > MAX_RECS) removeRecordingData(list.pop());
+  state.rec[idx] = list;
+  save();
+  toast(saved ? "Recording saved." : "Recording kept until you close the app.");
+  render();
+}
+function removeRecordingData(r) {
+  idbDo("readwrite", s => s.delete(r.key)).catch(() => {});
+  if (audioUrls[r.key]) URL.revokeObjectURL(audioUrls[r.key]);
+  delete audioUrls[r.key];
+}
+function deleteProfileAudio(id) {
+  idbDo("readwrite", s => s.delete(IDBKeyRange.bound(id + ":", id + ":￿"))).catch(() => {});
+}
+async function startRecording(idx) {
+  try {
+    if (!navigator.mediaDevices || !window.MediaRecorder) throw new Error("unsupported");
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mr = new MediaRecorder(stream);
+    rec.chunks = []; rec.idx = idx; rec.start = Date.now(); rec.mr = mr;
+    mr.ondataavailable = e => { if (e.data && e.data.size) rec.chunks.push(e.data); };
+    mr.onstop = () => {
+      stream.getTracks().forEach(t => t.stop());
+      clearInterval(rec.timer);
+      const blob = new Blob(rec.chunks, { type: mr.mimeType || "audio/mp4" });
+      const i = rec.idx, d = (Date.now() - rec.start) / 1000;
+      rec.mr = null; render(); storeRecording(i, blob, d);
+    };
+    mr.start(250);
+    rec.timer = setInterval(() => { const el = document.getElementById("recClock"); if (el) el.textContent = clock((Date.now() - rec.start) / 1000); }, 500);
+    render();
+  } catch (e) {
+    ui.micBlocked = true; rec.idx = idx; render();
+    toast(location.protocol === "file:" ? "The microphone needs the app to be opened from a web address. Use the recorder button instead." : "Microphone access was refused. Allow it in your browser settings, or use the recorder button.");
+  }
+}
+function recorderHTML(idx) {
+  const list = state.rec[idx] || [];
+  if (list.some(r => audioUrls[r.key] === undefined)) loadAudio(list);
+  const live = rec.mr && rec.idx === idx;
+  const control = live
+    ? `<button class="btn gold rec-btn recording" data-act="rec-stop"><span class="rec-dot"></span>Stop · <span id="recClock">0:00</span></button>`
+    : ui.micBlocked
+      ? `<label class="btn rec-btn" for="recFile" data-rec-for="${idx}"><span class="rec-dot"></span>Record with device recorder</label>`
+      : `<button class="btn rec-btn" data-act="rec-start" data-i="${idx}"><span class="rec-dot"></span>Record</button>`;
+  const items = list.map((r, k) => `<div class="rec-item"><span class="meta">${k === 0 ? "Latest · " : ""}${r.d === todayStr() ? "Today" : esc(r.d)}${r.dur ? " · " + clock(r.dur) : ""}</span>
+      <button class="linkbtn" data-act="rec-del" data-i="${idx}" data-k="${k}">Delete</button>
+      ${audioUrls[r.key] ? `<audio controls preload="metadata" src="${esc(audioUrls[r.key])}"></audio>` : audioUrls[r.key] === null ? `<span class="meta">Recorded on another device</span>` : ""}</div>`).join("");
+  return `<div class="recbox"><div class="row-between"><span class="reps-label">Your recitation</span>${control}</div>
+    ${list.length ? `<div class="rec-list">${items}</div>` : `<div class="hint" style="text-align:left">Record yourself reciting, then play it back next to the reciter on Quran.com to check your pronunciation.</div>`}</div>`;
+}
+
+/* ---------- backup & transfer ---------- */
+const b64enc = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const b64dec = s => decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/"))));
+function backupObj() {
+  const st = JSON.parse(JSON.stringify(state));
+  return { app: "ayah-a-day", v: 1, name: me().name, exported: new Date().toISOString(), state: st };
+}
+const transferCode = () => "AYAH1." + b64enc(JSON.stringify(backupObj()));
+function parseBackup(text) {
+  text = (text || "").trim();
+  let obj = null;
+  try {
+    if (text.startsWith("{")) obj = JSON.parse(text);
+    else { const m = text.replace(/\s+/g, "").match(/AYAH1\.([A-Za-z0-9_-]+)/); if (m) obj = JSON.parse(b64dec(m[1])); }
+  } catch (e) { obj = null; }
+  if (!obj || obj.app !== "ayah-a-day" || !obj.state || typeof obj.state.learned !== "object") return null;
+  obj.state = normalize(obj.state);
+  return obj;
+}
+async function saveBackupFile() {
+  const name = me().name.replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "-") || "learner";
+  const fname = `ayah-a-day-${name}-${todayStr()}.json`;
+  const blob = new Blob([JSON.stringify(backupObj(), null, 1)], { type: "application/json" });
+  try {
+    const file = new File([blob], fname, { type: "application/json" });
+    if (IS_IOS && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: "Ayah a Day backup" }); return; }
+  } catch (e) { if (e && e.name === "AbortError") return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = fname;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  toast("Backup file saved.");
+}
+function applyImport(asNew) {
+  const imp = ui.pendingImport; if (!imp) return;
+  stopRecordingIfAny();
+  const st = imp.state; st.rec = {};  // recordings stay on the device they were made on
+  if (asNew || !profiles.current) {
+    const id = newId(); profiles.list.push({ id, name: imp.name || "Learner" }); profiles.current = id;
+  } else {
+    Object.values(state.rec).flat().forEach(removeRecordingData);
+  }
+  saveProfiles(); state = st; ui.pendingImport = null; ui.tab = "today"; resetVerseUI(); save();
+  toast(`Restored ${learnedCount()} verses for ${me().name}.`); render();
+}
+function importPanelHTML() {
+  const imp = ui.pendingImport; if (!imp) return "";
+  const when = imp.exported ? new Date(imp.exported).toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" }) : "an earlier date";
+  const cur = me();
+  return `<div class="confirm"><b>Backup of ${esc(imp.name || "a learner")}</b> from ${esc(when)}: ${learnedCount(imp.state)} verse${learnedCount(imp.state) === 1 ? "" : "s"} memorized, ${fmtDur(Object.values(imp.state.time).reduce((a, b) => a + b, 0))} studied.
+    <div class="actions">
+      ${cur ? `<button class="btn" data-act="imp-replace">Replace ${esc(cur.name)}'s progress</button>` : ""}
+      <button class="btn primary" data-act="imp-new">Add as ${cur ? "a new learner" : "learner on this device"}</button>
+      <button class="btn ghost" data-act="imp-cancel">Cancel</button></div></div>`;
+}
+function restoreControlsHTML() {
+  return `<div class="actions"><label class="btn" for="restoreFile">Restore from a backup file</label><button class="btn" data-act="paste-open">Paste a transfer code</button></div>
+    ${ui.pasteOpen ? `<textarea id="pasteBox" placeholder="Paste the code that starts with AYAH1." aria-label="Transfer code"></textarea><div class="actions"><button class="btn primary" data-act="paste-go">Restore from code</button></div>` : ""}
+    ${importPanelHTML()}`;
+}
+function installHintHTML() {
+  if (IS_STANDALONE) return "";
+  if (IS_IOS) return `<div class="note">On iPhone or iPad, open this page in Safari, tap <b>Share</b>, then <b>Add to Home Screen</b>. It then opens like an app, works offline, and its saved progress is protected from being cleared.</div>`;
+  if (location.protocol === "file:") return `<div class="note">You're running the app from a file. Progress saves in this browser. To use the microphone and install it as an app, open it from its web address instead.</div>`;
+  return `<div class="note">To install it as an app on a PC, use the install icon in Chrome or Edge's address bar.</div>`;
+}
+
+/* ---------- rendering helpers ---------- */
+function ayahHTML(x, hiddenSet) {
+  const parts = x.ar.split(" ").map((w, k) => {
+    const hid = hiddenSet && hiddenSet.has(k);
+    return `<span class="w${hid ? " hid" : ""}" data-k="${k}"${hid ? ' role="button" tabindex="0" aria-label="Hidden word, tap to reveal"' : ""}>${esc(w)}</span>`;
+  });
+  return `<div class="ayah" lang="ar">${parts.join(" ")} <span class="mark">﴿${arNum(x.v)}﴾</span></div>`;
+}
+function meaningHTML(x, small) {
+  const st = small ? ' style="font-size:.95rem;color:var(--ink-soft)"' : "";
+  return (ui.showEn ? `<div class="trans" lang="en"${st}>${esc(x.en)}</div>` : "") +
+         (ui.showNl ? `<div class="trans nl" lang="nl"${st}>${esc(x.nl)}</div>` : "");
+}
+function listenLink(x) { return `<a class="listen" href="https://quran.com/${x.s}/${x.v}" target="_blank" rel="noopener">Listen on Quran.com ↗</a>`; }
+function surahHeader(x, eyebrow) {
+  const s = SURAH[x.s];
+  return `<div class="eyebrow">${eyebrow}</div>
+  <div class="surah-line"><h2>${esc(s.tr)} <span class="meta">· ${esc(s.m)}</span></h2><span class="ar-name" lang="ar">${esc(s.ar)}</span></div>
+  <div class="meta">Surah ${s.n}, verse ${x.v} of ${s.c}</div>`;
+}
+function hideSetFor(x, mode) {
+  const n = x.ar.split(" ").length; const set = new Set();
+  if (mode === "all") for (let k = 0; k < n; k++) set.add(k);
+  if (mode === "some") for (let k = 0; k < n; k++) if (k % 2 === 1 || (n <= 2 && k === n - 1)) set.add(k);
+  return set;
+}
+function pickerHTML() {
+  const opts = DATA.S.map(s => {
+    const l = surahLearned(s.n), done = l === s.c;
+    return `<option value="${s.n}"${state.focus === s.n ? " selected" : ""}>${esc(s.tr)} (${s.n}) · ${done ? "done" : l + "/" + s.c}</option>`;
+  }).join("");
+  return `<div class="picker"><label for="focus">Surah for today</label>
+    <select id="focus"><option value=""${state.focus == null ? " selected" : ""}>Follow the path in order</option>${opts}</select></div>`;
+}
+
+/* ---------- views ---------- */
+function renderWho() {
+  const rows = profiles.list.map(p => {
+    const st = p.id === profiles.current ? state : loadState(p.id);
+    const editing = ui.editProfile === p.id, deleting = ui.confirmDelete === p.id;
+    if (editing) return `<div class="pbtn cur" style="flex-direction:column;align-items:stretch">
+        <div class="field"><input id="rename-${p.id}" value="${esc(p.name)}" maxlength="30" aria-label="Name"><button class="btn primary" data-act="p-rename" data-id="${p.id}">Save name</button></div>
+        ${deleting
+          ? `<div class="confirm">Delete ${esc(p.name)} and all of their progress and recordings on this device?<div class="actions"><button class="btn" data-act="p-del-no">Keep</button><button class="btn gold" data-act="p-del-yes" data-id="${p.id}">Delete learner</button></div></div>`
+          : `<div class="mini"><button class="linkbtn" data-act="p-del" data-id="${p.id}">Delete this learner</button><button class="linkbtn" data-act="p-edit-done">Done</button></div>`}
+      </div>`;
+    return `<div class="row-between" style="flex-wrap:nowrap"><button class="pbtn${p.id === profiles.current ? " cur" : ""}" data-act="p-pick" data-id="${p.id}">
+        <span class="av">${esc(initial(p.name))}</span><span class="pinfo"><b>${esc(p.name)}</b><span>${learnedCount(st)} of 164 verses · ${streak(st)} day streak · ${fmtDur(Object.values(st.time).reduce((a, b) => a + b, 0))}</span></span></button>
+        <button class="linkbtn" style="color:var(--ink-soft)" data-act="p-edit" data-id="${p.id}" aria-label="Edit ${esc(p.name)}">Edit</button></div>`;
+  }).join("");
+  return `<div class="eyebrow">Learners on this device</div>
+    <div class="done" style="align-items:flex-start;text-align:left"><div class="big">${profiles.list.length ? "Who's learning today?" : "Welcome. Who's learning?"}</div>
+    <p>Each learner keeps their own verses, review schedule, study time and recordings. No account or sign-in is needed.</p></div>
+    ${rows ? `<div class="plist">${rows}</div>` : ""}
+    <div class="section"><h3>Add a learner</h3>
+      <div class="field"><input id="newName" maxlength="30" placeholder="Name, for example Mike" aria-label="New learner's name" autocomplete="off"><button class="btn primary" data-act="p-add">Add</button></div></div>
+    <div class="section"><h3>Already learning on another device?</h3>
+      <p class="meta">Make a backup there (Progress, then Backup and transfer), then restore it here.</p>
+      ${restoreControlsHTML()}</div>
+    ${installHintHTML()}`;
+}
+
+function verseNavHTML(x) {
+  const vs = surahVerses(x.s);
+  const prev = vs.find(v => v.v === x.v - 1), next = vs.find(v => v.v === x.v + 1);
+  const cells = vs.map(v => `<button class="vcell${isLearned(v.i) ? " l" : ""}${v.i === x.i ? " cur" : ""}" data-act="nav" data-i="${v.i}" aria-label="Verse ${v.v}${isLearned(v.i) ? ", memorized" : ""}"${v.i === x.i ? ' aria-current="true"' : ""}>${v.v}</button>`).join("");
+  return `<div class="vnav" aria-label="Verses of ${esc(SURAH[x.s].tr)}">
+    <div class="vnav-row"><button class="btn ghost" data-act="nav" data-i="${prev ? prev.i : ""}"${prev ? "" : " disabled"}>‹ Previous</button>
+      <span class="meta">Verse ${x.v} of ${vs.length}</span>
+      <button class="btn ghost" data-act="nav" data-i="${next ? next.i : ""}"${next ? "" : " disabled"}>Next ›</button></div>
+    <div class="vcells">${cells}</div></div>`;
+}
+const fmtDay = d => new Date(dayNum(d) * 864e5).toLocaleDateString([], { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+
+function renderToday() {
+  const idx = shownIdx();
+  if (idx == null) {
+    const nx = nextIdx(); const due = dueList().length; const n = learnedCount();
+    const practise = n ? `<button class="btn" data-act="practise">Practise memorized verses</button>` : "";
+    if (nx === -1) {
+      return `${pickerHTML()}<div class="done"><div class="big">You have learned all 164 verses on this path.</div>
+        <p>Keep them fresh with your daily review, and recite each surah in your prayers. Choose a surah above to practise it.</p>
+        <div class="actions" style="width:100%"><button class="btn primary" data-go="review">Open review</button>${practise}</div></div>`;
+    }
+    const nv = V[nx];
+    return `${pickerHTML()}<div class="done"><div class="eyebrow">Today's verse is done</div>
+      <div class="big">Tomorrow: ${esc(SURAH[nv.s].tr)}, verse ${nv.v}.</div>
+      <p>${due ? `You have ${due} verse${due > 1 ? "s" : ""} to review today. Short, regular review is what makes memorization stick.` : "Nothing is due for review. Recite what you've learned once from memory before you sleep."} You can change tomorrow's surah above.</p>
+      <div class="actions" style="width:100%">${due ? '<button class="btn gold" data-go="review">Review now</button>' : ""}${practise}<button class="btn ghost" data-act="extra">Learn one more anyway</button></div></div>`;
+  }
+  const x = V[idx]; const learned = isLearned(idx);
+  const nx = nextIdx(); const canGoNew = nx !== -1 && nx !== idx && !capReached();
+  const banner = surahDone(state.focus) && x.s === state.focus
+    ? `<div class="note">You've memorized all of ${esc(SURAH[x.s].tr)}. Move through its verses below to practise, or choose another surah above.</div>` : "";
+  const eyebrow = learned
+    ? `Memorized${state.learned[idx].k ? "" : " on " + fmtDay(state.learned[idx].d)} · Practice`
+    : idx === nx ? `Verse ${learnedCount() + 1} of 164 · New` : "Not memorized yet";
+  const bottom = learned
+    ? `<div class="actions">${canGoNew ? `<button class="btn primary" data-act="view-today">Go to today's new verse</button>` : ""}</div>
+       <div class="mini"><button class="linkbtn" data-act="unlearn" data-i="${idx}">Unmark as memorized</button></div>`
+    : `<div class="actions"><button class="btn primary" data-act="learn">I've memorized this verse</button></div>`;
+  return `${pickerHTML()}${banner}
+    ${surahHeader(x, eyebrow)}
+    ${verseNavHTML(x)}
+    ${x.v === 1 && x.s !== 1 ? `<div class="bism" lang="ar">${esc(BISM)}</div>` : ""}
+    ${ayahHTML(x, ui.hidden)}
+    ${ui.showTr ? `<div class="translit">${esc(x.tr)}</div>` : ""}
+    ${meaningHTML(x)}
+    <div class="seg" role="group" aria-label="Practice mode">
+      <button class="chip" data-mode="read" aria-pressed="${ui.mode === "read"}">Read</button>
+      <button class="chip" data-mode="some" aria-pressed="${ui.mode === "some"}">Hide some words</button>
+      <button class="chip" data-mode="all" aria-pressed="${ui.mode === "all"}">From memory</button>
+    </div>
+    <div class="hint">${ui.mode === "read" ? "Read it slowly and aloud while you listen to a reciter." : "Recite, then tap a hidden word to check it."}</div>
+    <div class="seg">
+      <button class="chip" data-toggle="tr" aria-pressed="${ui.showTr}">Transliteration</button>
+      <button class="chip" data-toggle="en" aria-pressed="${ui.showEn}">English</button>
+      <button class="chip" data-toggle="nl" aria-pressed="${ui.showNl}">Nederlands</button>
+    </div>
+    <div class="reps">
+      <div><div class="reps-label">Repetitions: ${ui.reps} of ${REPS}</div>
+      <div class="dots" aria-hidden="true">${Array.from({ length: REPS }, (_, k) => `<span class="dot${k < ui.reps ? " on" : ""}"></span>`).join("")}</div></div>
+      <button class="btn" data-act="rep">I recited it</button>
+    </div>
+    ${recorderHTML(idx)}
+    <div class="row-between">${listenLink(x)}<span class="meta">Time on this verse: <span class="time-on" id="verseTime">${fmtDur(state.vtime[idx])}</span></span></div>
+    ${bottom}`;
+}
+
+function renderReview() {
+  const due = dueList();
+  if (!due.length) {
+    const n = learnedCount();
+    return `<div class="done"><div class="eyebrow">Review</div>
+      <div class="big">${n ? "All caught up." : "Nothing to review yet."}</div>
+      <p>${n ? "Verses come back after 1, 3, 7, 14, 30 and 60 days. If you miss one, it starts again at 1 day." : "Each verse you memorize comes back here the next day, then at growing intervals."}</p>
+      <button class="btn primary" data-go="today">Go to today's verse</button></div>`;
+  }
+  const x = V[due[0]];
+  return `${surahHeader(x, `Review · ${due.length} left today`)}
+    ${meaningHTML(x, true)}
+    ${ayahHTML(x, ui.rvReveal ? new Set() : hideSetFor(x, "all"))}
+    ${ui.rvReveal ? `<div class="translit">${esc(x.tr)}</div>` : `<div class="hint">Recite the verse from memory, then show it to check.</div>`}
+    ${recorderHTML(x.i)}
+    <div class="actions">${ui.rvReveal
+      ? `<button class="btn" data-act="rv-again">Need more practice</button><button class="btn primary" data-act="rv-good">I knew it</button>`
+      : `<button class="btn primary" data-act="rv-show">Show the verse</button>`}</div>
+    <div class="row-between">${listenLink(x)}</div>`;
+}
+
+function timeCardHTML() {
+  const t = todayStr();
+  const days = Array.from({ length: 7 }, (_, k) => addDays(t, k - 6));
+  const vals = days.map(d => state.time[d] || 0);
+  const max = Math.max(600, ...vals);
+  const week = vals.reduce((a, b) => a + b, 0);
+  const total = Object.values(state.time).reduce((a, b) => a + b, 0);
+  const bars = days.map((d, k) => `<div class="bar${d === t ? " today" : ""}${vals[k] ? "" : " empty"}" title="${fmtDur(vals[k])}">
+      <span>${vals[k] ? shortDur(vals[k]) : ""}</span><i style="height:${Math.max(2, Math.round(vals[k] / max * 60))}px"></i><span>${d === t ? "Today" : weekday(d)}</span></div>`).join("");
+  return `<div class="timecard"><div class="eyebrow">${esc(me().name)}'s study time</div>
+    <div class="tstats"><div><b>${fmtDur(state.time[t])}</b><span>Today</span></div><div><b>${fmtDur(week)}</b><span>Last 7 days</span></div><div><b>${fmtDur(total)}</b><span>All time</span></div></div>
+    <div class="bars" aria-label="Minutes per day, last 7 days">${bars}</div>
+    <div class="meta">Counted while the app is open and you're using it. It pauses after 2 minutes without activity.</div></div>`;
+}
+
+function renderPath() {
+  if (ui.openSurah != null) return renderSurah(ui.openSurah);
+  const nx = nextIdx();
+  const rows = DATA.S.map(s => {
+    const vs = surahVerses(s.n); const l = surahLearned(s.n); const tm = surahTime(s.n);
+    const cells = vs.map(x => `<span class="cell${isLearned(x.i) ? " l" : x.i === nx ? " t" : ""}"></span>`).join("");
+    return `<button class="srow" data-surah="${s.n}"><span class="nm">${esc(s.tr)} <em>· ${esc(s.m)}</em></span><span class="arn" lang="ar">${esc(s.ar)}</span>
+      <span class="cells" aria-hidden="true">${cells}</span><span class="num">${l} / ${s.c} verses${tm >= 60 ? " · " + fmtDur(tm) : ""}${state.focus === s.n ? " · today's surah" : ""}</span></button>`;
+  }).join("");
+  return `${timeCardHTML()}
+    <div class="eyebrow">Surahs · Al-Fatihah, then Juz ʿAmma from An-Nas back to Ad-Duha</div>
+    <div class="path">${rows}</div>
+    <div class="section"><h3>Backup and transfer</h3>
+      <p class="meta">Move ${esc(me().name)}'s progress to another phone, tablet or computer, or keep a copy safe. Recordings stay on the device they were made on.</p>
+      <div class="actions"><button class="btn primary" data-act="bk-file">Save backup file</button><button class="btn" data-act="bk-code">Copy transfer code</button></div>
+      ${ui.showCode ? `<textarea id="codeBox" readonly aria-label="Transfer code">${esc(ui.showCode)}</textarea><div class="meta">Send this code to yourself (for example by email or message), then paste it on the other device under "Paste a transfer code".</div>` : ""}
+      ${restoreControlsHTML()}
+    </div>
+    <div class="section settings">
+      <div class="row-between"><label for="pace">New verses per day</label>
+        <select id="pace"><option value="1"${state.pace == 1 ? " selected" : ""}>1 verse</option><option value="2"${state.pace == 2 ? " selected" : ""}>2 verses</option><option value="3"${state.pace == 3 ? " selected" : ""}>3 verses</option></select></div>
+      ${ui.confirmReset
+        ? `<div class="confirm">Erase ${esc(me().name)}'s progress, study time and recordings, and start again?<div class="actions"><button class="btn" data-act="reset-no">Keep my progress</button><button class="btn gold" data-act="reset-yes">Erase and restart</button></div></div>`
+        : `<button class="back" style="color:var(--warn)" data-act="reset">Start over</button>`}
+      ${installHintHTML()}
+      <div>Arabic text: Uthmani script (King Fahd Complex, via Quran Encyclopedia). English: Saheeh International. Nederlands: Sofian S. Siregar. Transliteration: Tanzil.</div>
+    </div>`;
+}
+
+function renderSurah(n) {
+  const s = SURAH[n]; const vs = surahVerses(n);
+  const all = vs.every(x => isLearned(x.i));
+  return `<button class="back" data-act="close-surah">← All surahs</button>
+    <div class="surah-line"><h2>${esc(s.tr)} <span class="meta">· ${esc(s.m)}</span></h2><span class="ar-name" lang="ar">${esc(s.ar)}</span></div>
+    <div class="meta">Surah ${s.n} · ${s.c} verses · ${surahLearned(n)} memorized · ${fmtDur(surahTime(n))} studied</div>
+    <div class="actions"><button class="btn primary" data-act="focus" data-n="${n}">${all ? "Practise this surah" : state.focus === n ? "Continue this surah today" : "Learn this surah next"}</button></div>
+    ${n !== 1 ? `<div class="bism" lang="ar">${esc(BISM)}</div>` : ""}
+    <div class="vlist">${vs.map(x => `<div class="vitem">
+      <span class="tag${isLearned(x.i) ? "" : " up"}">${isLearned(x.i) ? "Memorized" : "Verse " + x.v}${(state.rec[x.i] || []).length ? " · recorded" : ""}</span>
+      <div class="ar" lang="ar">${esc(x.ar)} <span class="mark">﴿${arNum(x.v)}﴾</span></div>
+      ${ui.showEn ? `<div class="en" lang="en">${esc(x.en)}</div>` : ""}
+      ${ui.showNl ? `<div class="en" lang="nl">${esc(x.nl)}</div>` : ""}
+      <button class="linkbtn open" data-act="open-verse" data-i="${x.i}">${isLearned(x.i) ? "Practise" : "Open"} this verse ›</button></div>`).join("")}</div>
+    ${all ? "" : `<div class="hint">Already know this surah by heart?</div><div class="actions"><button class="btn" data-act="know" data-n="${n}">Mark as known and add to review</button></div>`}
+    <div class="row-between"><a class="listen" href="https://quran.com/${n}" target="_blank" rel="noopener">Listen to the whole surah ↗</a></div>`;
+}
+
+function renderHeader() {
+  const p = me();
+  document.getElementById("whoBtn").hidden = !p;
+  document.getElementById("stats").hidden = !p || ui.tab === "who";
+  document.getElementById("tabs").hidden = !p || ui.tab === "who";
+  if (!p) return;
+  document.getElementById("whoAv").textContent = initial(p.name);
+  document.getElementById("whoName").textContent = p.name;
+  document.getElementById("stStreak").textContent = streak();
+  document.getElementById("stLearned").textContent = learnedCount();
+  document.getElementById("stTime").textContent = shortDur(state.time[todayStr()]);
+}
+function render() {
+  if (!me()) ui.tab = "who";
+  document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === ui.tab));
+  const due = me() ? dueList().length : 0; const c = document.getElementById("rvCount");
+  c.hidden = !due; c.textContent = due;
+  renderHeader();
+  document.getElementById("view").innerHTML = ui.tab === "who" ? renderWho() : ui.tab === "today" ? renderToday() : ui.tab === "review" ? renderReview() : renderPath();
+  syncLine();
+}
+function toast(msg) {
+  const t = document.getElementById("toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2600);
+}
+function resetVerseUI() { ui.mode = "read"; ui.reps = 0; ui.hidden = new Set(); ui.extra = false; ui.rvReveal = false; ui.openSurah = null; ui.showCode = null; ui.confirmReset = false; }
+function stopRecordingIfAny() { if (rec.mr && rec.mr.state !== "inactive") rec.mr.stop(); }
+function switchTo(id) {
+  stopRecordingIfAny(); save();
+  profiles.current = id; saveProfiles();
+  state = loadState(id); lastSaved = null; resetVerseUI(); ui.viewIdx = null; ui.tab = "today"; ui.editProfile = null; ui.confirmDelete = null;
+  render(); window.scrollTo({ top: 0 });
+}
+function askPersist() { try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {} }
+
+/* ---------- study time ---------- */
+let lastInput = Date.now();
+["pointerdown", "keydown", "scroll", "touchstart"].forEach(ev => addEventListener(ev, () => lastInput = Date.now(), { passive: true, capture: true }));
+document.addEventListener("play", () => lastInput = Date.now(), true);
+setInterval(() => {
+  if (document.hidden || !me() || ui.tab === "who") return;
+  const playing = [...document.querySelectorAll("audio")].some(a => !a.paused);
+  if (!rec.mr && !playing && Date.now() - lastInput > 120000) return;
+  const t = todayStr();
+  state.time[t] = (state.time[t] || 0) + 1;
+  const cur = currentVerse();
+  if (cur != null) state.vtime[cur] = (state.vtime[cur] || 0) + 1;
+  if (state.time[t] % 15 === 0) {
+    renderHeader();
+    const vt = document.getElementById("verseTime"); if (vt && cur != null) vt.textContent = fmtDur(state.vtime[cur]);
+    save();
+  }
+}, 1000);
+document.addEventListener("visibilitychange", () => { if (document.hidden) save(); });
+addEventListener("pagehide", save);
+
+/* ---------- events ---------- */
+document.querySelector("nav.tabs").addEventListener("click", e => {
+  const b = e.target.closest("button[data-tab]"); if (!b) return;
+  stopRecordingIfAny();
+  ui.tab = b.dataset.tab; ui.openSurah = null; ui.rvReveal = false; ui.showCode = null; render();
+});
+document.getElementById("whoBtn").addEventListener("click", () => { stopRecordingIfAny(); save(); ui.tab = "who"; ui.editProfile = null; ui.confirmDelete = null; render(); });
+document.getElementById("view").addEventListener("click", async e => {
+  const w = e.target.closest(".w.hid");
+  if (w) { if (ui.tab === "today") ui.hidden.delete(+w.dataset.k); w.classList.remove("hid"); w.classList.add("peek"); w.removeAttribute("role"); w.removeAttribute("tabindex"); return; }
+  const lab = e.target.closest("label[data-rec-for]"); if (lab) { rec.idx = +lab.dataset.recFor; return; }
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.go) { ui.tab = b.dataset.go; render(); return; }
+  const act = b.dataset.act;
+  // learner & backup actions work without a current learner
+  switch (act) {
+    case "p-add": {
+      const inp = document.getElementById("newName"); const name = (inp.value || "").trim().slice(0, 30);
+      if (!name) { inp.focus(); toast("Type a name first."); return; }
+      const id = newId(); profiles.list.push({ id, name }); saveProfiles(); askPersist(); switchTo(id); toast(`Welcome, ${name}.`); return; }
+    case "p-pick": switchTo(b.dataset.id); return;
+    case "p-edit": ui.editProfile = b.dataset.id; ui.confirmDelete = null; render(); return;
+    case "p-edit-done": ui.editProfile = null; ui.confirmDelete = null; render(); return;
+    case "p-rename": {
+      const p = profiles.list.find(x => x.id === b.dataset.id); const v = (document.getElementById("rename-" + p.id).value || "").trim().slice(0, 30);
+      if (v) { p.name = v; saveProfiles(); } ui.editProfile = null; render(); return; }
+    case "p-del": ui.confirmDelete = b.dataset.id; render(); return;
+    case "p-del-no": ui.confirmDelete = null; render(); return;
+    case "p-del-yes": {
+      const id = b.dataset.id; const p = profiles.list.find(x => x.id === id);
+      if (id === profiles.current) { stopRecordingIfAny(); profiles.current = null; state = normalize(); }
+      profiles.list = profiles.list.filter(x => x.id !== id); lsDel(stateKey(id)); deleteProfileAudio(id); saveProfiles();
+      ui.editProfile = null; ui.confirmDelete = null; ui.tab = "who"; toast(`${p ? p.name : "Learner"} deleted.`); render(); return; }
+    case "paste-open": ui.pasteOpen = !ui.pasteOpen; render(); if (ui.pasteOpen) document.getElementById("pasteBox")?.focus(); return;
+    case "paste-go": {
+      const imp = parseBackup(document.getElementById("pasteBox").value);
+      if (!imp) { toast("That code wasn't recognised. Copy the whole code, starting with AYAH1."); return; }
+      ui.pendingImport = imp; ui.pasteOpen = false; render(); return; }
+    case "imp-new": applyImport(true); return;
+    case "imp-replace": applyImport(false); return;
+    case "imp-cancel": ui.pendingImport = null; render(); return;
+  }
+  if (!me()) return;
+  const idx = ui.tab === "today" ? shownIdx() : nextIdx(); const x = idx == null || idx === -1 ? null : V[idx];
+  if (b.dataset.mode && x) { ui.mode = b.dataset.mode; ui.hidden = hideSetFor(x, ui.mode); render(); return; }
+  if (b.dataset.toggle) { const k = { tr: "showTr", en: "showEn", nl: "showNl" }[b.dataset.toggle]; ui[k] = !ui[k]; saveView(); render(); return; }
+  if (b.dataset.surah) { ui.openSurah = +b.dataset.surah; render(); window.scrollTo({ top: 0 }); return; }
+  switch (act) {
+    case "rep": ui.reps = Math.min(REPS, ui.reps + 1); if (ui.reps === REPS) toast("Ten recitations. Now try it once from memory."); render(); break;
+    case "learn": {
+      if (!x || isLearned(idx)) break;
+      stopRecordingIfAny(); ui.viewIdx = null;
+      state.learned[idx] = { d: todayStr() }; state.review[idx] = { lvl: 0, last: todayStr() };
+      markActive(); resetVerseUI();
+      let msg = "Memorized. It comes back for review tomorrow.";
+      if (surahLearned(x.s) === SURAH[x.s].c) { msg = `You finished ${SURAH[x.s].tr}. Mashallah.`; if (state.focus === x.s) state.focus = null; }
+      save(); toast(msg); render(); break; }
+    case "extra": resetVerseUI(); ui.viewIdx = null; ui.extra = true; render(); break;
+    case "nav": case "open-verse": {
+      if (b.dataset.i === "") break;
+      stopRecordingIfAny(); resetVerseUI(); ui.viewIdx = +b.dataset.i;
+      if (act === "open-verse") { ui.tab = "today"; render(); window.scrollTo({ top: 0 }); } else render();
+      break; }
+    case "practise": { const i = lastLearned(); if (i != null) { resetVerseUI(); ui.viewIdx = i; render(); } break; }
+    case "view-today": stopRecordingIfAny(); resetVerseUI(); ui.viewIdx = null; if (surahDone(state.focus)) state.focus = null; save(); render(); window.scrollTo({ top: 0 }); break;
+    case "unlearn": {
+      const i = +b.dataset.i; delete state.learned[i]; delete state.review[i];
+      save(); toast("Moved back to learning. It won't come up in review until you memorize it again."); render(); break; }
+    case "rv-show": ui.rvReveal = true; render(); break;
+    case "rv-good": case "rv-again": {
+      stopRecordingIfAny();
+      const i = dueList()[0]; const r = state.review[i] || { lvl: 0 };
+      state.review[i] = { lvl: act === "rv-good" ? Math.min(r.lvl + 1, INTERVALS.length - 1) : 0, last: todayStr() };
+      markActive(); save(); ui.rvReveal = false; render(); break; }
+    case "rec-start": startRecording(+b.dataset.i); break;
+    case "rec-stop": stopRecordingIfAny(); break;
+    case "rec-del": {
+      const i = +b.dataset.i, k = +b.dataset.k; const list = state.rec[i] || [];
+      const [r] = list.splice(k, 1); if (r) removeRecordingData(r);
+      if (!list.length) delete state.rec[i];
+      save(); toast("Recording deleted."); render(); break; }
+    case "focus": state.focus = +b.dataset.n; resetVerseUI(); ui.viewIdx = null; ui.tab = "today"; save(); render(); window.scrollTo({ top: 0 }); break;
+    case "close-surah": ui.openSurah = null; render(); break;
+    case "know": {
+      const n = +b.dataset.n; const t = todayStr();
+      surahVerses(n).filter(v => !isLearned(v.i)).forEach(v => { state.learned[v.i] = { d: t, k: 1 }; state.review[v.i] = { lvl: 0, last: t }; });
+      if (state.focus === n) state.focus = null;
+      save(); toast(`${SURAH[n].tr} added to your review.`); render(); break; }
+    case "bk-file": saveBackupFile().catch(() => toast("The backup couldn't be saved. Try Copy transfer code instead.")); break;
+    case "bk-code": {
+      const code = transferCode(); ui.showCode = code; render();
+      const box = document.getElementById("codeBox");
+      try { await navigator.clipboard.writeText(code); toast("Transfer code copied."); }
+      catch (err) { if (box) { box.focus(); box.select(); } toast("Select the code below and copy it."); }
+      break; }
+    case "reset": ui.confirmReset = true; render(); break;
+    case "reset-no": ui.confirmReset = false; render(); break;
+    case "reset-yes":
+      Object.values(state.rec).flat().forEach(removeRecordingData);
+      state = normalize({ pace: state.pace }); resetVerseUI(); save(); toast("Progress erased."); render(); break;
+  }
+});
+document.getElementById("view").addEventListener("keydown", e => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.classList.contains("hid")) { e.preventDefault(); e.target.click(); }
+  if (e.key === "Enter" && e.target.id === "newName") { e.preventDefault(); document.querySelector('[data-act="p-add"]').click(); }
+});
+document.getElementById("view").addEventListener("change", e => {
+  if (e.target.id === "pace") { state.pace = +e.target.value; save(); render(); }
+  if (e.target.id === "focus") {
+    state.focus = e.target.value ? +e.target.value : null;
+    stopRecordingIfAny(); resetVerseUI(); ui.viewIdx = null; save(); render();
+  }
+});
+document.getElementById("recFile").addEventListener("change", async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = "";
+  if (!f || rec.idx == null || !me()) return;
+  let dur = 0;
+  try { const a = new Audio(); const u = URL.createObjectURL(f); a.src = u; await new Promise(r => { a.onloadedmetadata = r; a.onerror = r; setTimeout(r, 2000); }); dur = isFinite(a.duration) ? a.duration : 0; URL.revokeObjectURL(u); } catch (err) {}
+  storeRecording(rec.idx, f, dur);
+});
+document.getElementById("restoreFile").addEventListener("change", async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  const imp = parseBackup(await f.text().catch(() => ""));
+  if (!imp) { toast("That file isn't an Ayah a Day backup."); return; }
+  ui.pendingImport = imp; render();
+});
+
+render();
+if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+  addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>

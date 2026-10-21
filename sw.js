@@ -1,5 +1,5 @@
 // Ayah a Day offline support: the app shell is cached so it opens without internet.
-const CACHE = "ayah-a-day-v6";
+const CACHE = "ayah-a-day-v7";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png",
   "fonts/amiri-quran-arabic-400-normal.woff2", "fonts/amiri-quran-latin-400-normal.woff2",
   "fonts/spectral-latin-400-normal.woff2", "fonts/spectral-latin-400-italic.woff2", "fonts/spectral-latin-600-normal.woff2",
